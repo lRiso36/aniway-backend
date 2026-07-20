@@ -16,8 +16,8 @@ app.get('/', (_req, res) => {
 app.post("/users", usersController.create.bind(usersController));
 app.get("/users", usersController.list.bind(usersController));
 app.get("/users/:id", usersController.getById.bind(usersController));
-app.patch("/users:id", usersController.update.bind(usersController));
-app.delete("/users:id", usersController.delete.bind(usersController));
+app.patch("/users/:id", usersController.update.bind(usersController));
+app.delete("/users/:id", usersController.delete.bind(usersController));
 
 
 export default app;
