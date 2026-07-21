@@ -11,7 +11,7 @@ const run = async (): Promise<void> => {
   const testUser = new User({
     username: 'testuser3',
     email: 'test2@example.com',
-    password: 'hey'
+    password: 'hey',
   });
 
   const saved = await testUser.save();
@@ -22,7 +22,7 @@ const run = async (): Promise<void> => {
 };
 
 try {
-run();
-} catch (err){
+  run();
+} catch (err) {
   console.error('Script failed:', err);
 }

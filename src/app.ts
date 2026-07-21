@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-
-import usersController from './controllers/users.controller';
-
+import userRoutes from './routes/users.routes';
 
 const app = express();
 
@@ -13,11 +11,6 @@ app.get('/', (_req, res) => {
   res.send('Aniway API is running');
 });
 
-app.post("/users", usersController.create.bind(usersController));
-app.get("/users", usersController.list.bind(usersController));
-app.get("/users/:id", usersController.getById.bind(usersController));
-app.patch("/users/:id", usersController.update.bind(usersController));
-app.delete("/users/:id", usersController.delete.bind(usersController));
-
+app.use('/users', userRoutes);
 
 export default app;

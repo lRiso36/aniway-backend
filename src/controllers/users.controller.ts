@@ -1,10 +1,9 @@
 import BaseController from './base.controller';
+import UserModel, { User } from '../models/user.model';
 
-import User from '../models/user.model';
-
-class UsersController extends BaseController {
+class UsersController extends BaseController<User> {
   constructor() {
-    super(User);
+    super(UserModel);
   }
 }
 
