@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:5000/push
+
+### save a subscription
+POST {{baseUrl}}/subscribe
+Content-Type: application/json
+
+{
+    "endpoint": "https://fcm.googleapis.com/fcm/send/test-endpoint-abc123",
+    "keys": {
+        "p256dh": "fake-p256dh-value-for-testing",
+        "auth": "fake-auth-value-for-testing"
+    },
+    "userId": "665f1a2b3c4d5e6f7a8b9c0d"
+}
+
+### save the same endpoint with different userId
+POST {{baseUrl}}/subscribe
+Content-Type: application/json
+
+{
+    "endpoint": "https://fcm.googleapis.com/fcm/send/test-endpoint-abc123",
+    "keys": {
+        "p256dh": "fake-p256dh-value-for-testing",
+        "auth": "fake-auth-value-for-testing"
+    },
+    "userId": "665f1a2b3c4d5e6f7a8b9c0e"
+}
+
+### missing required field
+POST {{baseUrl}}/subscribe
+Content-Type: application/json
+
+{
+    "endpoint": "https://fcm.googleapis.com/fcm/send/test-endpoint-xyz789"
+}

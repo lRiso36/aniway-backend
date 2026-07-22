@@ -10,6 +10,9 @@ interface IConfig {
   tokenTtl: string;
   refreshTokenSecret: string;
   refreshTokenTtl: string;
+  vapidPublicKey: string;
+  vapidPrivateKey: string;
+  vapidSubject: string;
 }
 
 const config: IConfig = {
@@ -23,6 +26,9 @@ const config: IConfig = {
   refreshTokenSecret:
     process.env.REFRESH_TOKEN_SECRET || 'default_refresh_token_secret',
   refreshTokenTtl: process.env.REFRESH_TOKEN_TTL || '7d',
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY || '',
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || '',
+  vapidSubject: process.env.VAPID_SUBJECT || 'mailto:lenaderiso22@gmail.com',
 };
 
 export default config;

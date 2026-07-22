@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import userRoutes from './routes/users.routes';
+import pushSubscriptionRoutes from './routes/pushSubscription.routes';
 
 const app = express();
 
@@ -12,5 +13,6 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/users', userRoutes);
+app.use('/push', pushSubscriptionRoutes);
 
 export default app;
