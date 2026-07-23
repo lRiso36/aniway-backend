@@ -13,6 +13,8 @@ interface IConfig {
   vapidPublicKey: string;
   vapidPrivateKey: string;
   vapidSubject: string;
+  emailUser: string;
+  emailAppPassword: string;
 }
 
 const config: IConfig = {
@@ -29,6 +31,8 @@ const config: IConfig = {
   vapidPublicKey: process.env.VAPID_PUBLIC_KEY || '',
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || '',
   vapidSubject: process.env.VAPID_SUBJECT || 'mailto:lenaderiso22@gmail.com',
+  emailUser: process.env.EMAIL_USER || '',
+  emailAppPassword: process.env.EMAIL_APP_PASSWORD || '',
 };
 
 export default config;
