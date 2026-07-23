@@ -12,6 +12,9 @@
     "format": "prettier --write .",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "*.ts": ["eslint --fix", "prettier --write"]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -46,6 +49,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.7.0",
     "husky": "^9.1.7",
+    "lint-staged": "^17.2.0",
     "prettier": "^3.9.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^6.0.3",
