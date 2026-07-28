@@ -1,27 +1,52 @@
-import { Model } from 'mongoose';
 import { Request, Response } from 'express';
+import { Model } from 'mongoose';
+import _ from 'lodash';
 
 class BaseController<T> {
   // usable inside this class and any class that extends it
   //holds whichever model one particular instance of this is working with
   protected model: Model<T>;
+  _: typeof _;
 
   constructor(model: Model<T>) {
     this.model = model;
+    this._ = _;
   }
 
   async create(req: Request, res: Response) {
-    const document = new this.model(req.body);
-    const newDocument = await document.save();
+    try {
+      console.log('base.controller.ts: create: req.body =', req.body);
 
-    res.status(201).json({
-      message: 'Document created successfully',
-      data: newDocument,
-    });
+      const document = new this.model(req.body);
+
+      const newDocument = await document.save();
+
+      if (!newDocument) {
+        throw new Error('Failed to create document');
+      }
+
+      res.status(201).json({
+        message: 'Document created successfully',
+        data: newDocument,
+      });
+    } catch (error: unknown) {
+      console.error('Error creating document:', error);
+      res.status(500).json({
+        message: error?.toString(),
+      });
+    }
   }
 
   async list(req: Request, res: Response) {
-    const list = await this.model.find();
+    const { page = 1, pageSize = 10 } = req.query;
+
+    const q = this._.omit(req.query, ['page', 'pageSize']);
+
+    const list = await this.model
+      .find(q)
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(pageSize))
+      .limit(Number(pageSize));
 
     res.status(200).json({
       message: 'Documents found successfully',
@@ -47,7 +72,9 @@ class BaseController<T> {
   async update(req: Request, res: Response) {
     const updated = await this.model.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        $set: req.body,
+      },
       { new: true, runValidators: true }
     );
 

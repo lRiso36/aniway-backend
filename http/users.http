@@ -1,12 +1,17 @@
-@baseUrl = http://localhost:5000/users
+@baseUrl = http://localhost:5555/users
 
 ### create user
 POST {{baseUrl}}
 Content-Type: application/json
 
 {
-    "username": "testuser4",
-    "email": "test4@example.com",
+    "username": "testuser1",
+    "email": "test1@example.com",
     "password": "hey"
 }
+
+
+### list users
+GET {{baseUrl}}?username=testuser1
+          
 
