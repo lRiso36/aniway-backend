@@ -3,3 +3,9 @@ node_modules
 
 # env files
 .env
+
+# dist and build
+dist
+
+# logs
+*.log

@@ -2,20 +2,24 @@ import { Request, Response } from 'express';
 import { Model } from 'mongoose';
 import _ from 'lodash';
 
+import logger from '../logs/logger';
+
 class BaseController<T> {
   // usable inside this class and any class that extends it
   //holds whichever model one particular instance of this is working with
   protected model: Model<T>;
   _: typeof _;
+  logger: typeof logger;
 
   constructor(model: Model<T>) {
     this.model = model;
     this._ = _;
+    this.logger = logger;
   }
 
   async create(req: Request, res: Response) {
     try {
-      console.log('base.controller.ts: create: req.body =', req.body);
+      logger.info('base.controller.ts: create: req.body =', req.body);
 
       const document = new this.model(req.body);
 
@@ -30,7 +34,7 @@ class BaseController<T> {
         data: newDocument,
       });
     } catch (error: unknown) {
-      console.error('Error creating document:', error);
+      logger.error('Error creating document:', error);
       res.status(500).json({
         message: error?.toString(),
       });

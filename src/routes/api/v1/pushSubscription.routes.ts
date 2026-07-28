@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { saveSubscripton } from '../controllers/pushSubscription.controller';
+import { saveSubscripton } from '../../../controllers/pushSubscription.controller';
 
 const router = Router();
 
