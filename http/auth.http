@@ -1,0 +1,77 @@
+@baseUrl = http://localhost:5000/api/v1
+
+### Register - success case
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "testuser2@example.com",
+  "password": "password123"
+}
+
+### Register - missing fields: should return 400
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "password": "password123"
+}
+
+### Register - duplicate email: run the success case above first, then this
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "differentusername",
+  "email": "testuser1@example.com",
+  "password": "password123"
+}
+
+### Register - duplicate username: run the success case above first, then this
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser1",
+  "email": "different@example.com",
+  "password": "password123"
+}
+
+
+### Login - success case: uses registered above
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "lenaderiso22@gmail.com",
+  "password": "newpassword456"
+}
+
+### Login - missing fields (should return 400)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser1@example.com"
+}
+
+### Login - wrong password (should return 401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser1@example.com",
+  "password": "wrongpassword"
+}
+
+### Login - nonexistent email (should return 401, same message as wrong password)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "doesnotexist@example.com",
+  "password": "password123"
+}
+
+

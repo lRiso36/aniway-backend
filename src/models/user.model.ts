@@ -9,6 +9,7 @@ export interface User {
   displayName: string;
   bio: string;
   isPrivate: boolean;
+  isVerified: boolean;
 }
 //raw field definition
 const userSchema = new mongoose.Schema<User>(
@@ -41,6 +42,10 @@ const userSchema = new mongoose.Schema<User>(
       default: '',
     },
     isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
       type: Boolean,
       default: false,
     },

@@ -1,0 +1,59 @@
+
+@baseUrl = http://localhost:5000/api/v1/auth
+
+
+### ============================================================
+### TEST 5 — Verify email
+### Steps:
+###   1. Register below with a REAL email you can check (fill in
+###      @realTestEmail first).
+###   2. Check that inbox for a "Verify your email" message.
+###   3. Copy just the token value out of the link's ?token=...
+###      part into @verifyToken below.
+###   4. Run "Verify email — success" — expect 200
+###      "Email verified successfully".
+###   5. Check Mongo: User.isVerified is now true, and the
+###      VerificationToken doc is gone (deleted).
+###   6. Run "Verify email — success" AGAIN with the same token —
+###      expect 400 "Invalid or expired verification token"
+###      (already consumed).
+### ============================================================
+
+@realTestEmail = lenaderiso22@gmail.com
+@realTestPassword = password123
+
+### 5a — Register with a real, checkable email
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "verifytestuser1",
+  "email": "{{realTestEmail}}",
+  "password": "{{realTestPassword}}"
+}
+
+### 5b — Verify email — success (paste token from the email link)
+@verifyToken = 45964bf7366fd5b74aa2fb4295e10e39dfb5b30f1cbf0bdb51c66c0b71473ee2
+
+POST {{baseUrl}}/verify-email
+Content-Type: application/json
+
+{
+  "token": "{{verifyToken}}"
+}
+
+### 5c — Verify email — missing token
+### Expect: 400 "Verification token is required"
+POST {{baseUrl}}/verify-email
+Content-Type: application/json
+
+{}
+
+### 5d — Verify email — invalid/garbage token
+### Expect: 400 "Invalid or expired verification token"
+POST {{baseUrl}}/verify-email
+Content-Type: application/json
+
+{
+  "token": "not-a-real-token"
+}

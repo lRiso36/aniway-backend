@@ -1,0 +1,82 @@
+@baseUrl = http://localhost:5000/api/v1/auth
+
+@testEmail = testemail9@test.com
+@testPassword = password123
+
+### Prerequisite - Register
+### Register - success case
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "testuser369",
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### TEST 1a — Login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### TEST 1b — Refresh (normal rotation)
+POST {{baseUrl}}/refresh
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTcxZjUzOThlOTM5YjVkOGNjNDVmNzgiLCJpYXQiOjE3ODU4NTMyOTQsImV4cCI6MTc4NjQ1ODA5NH0.K0fLHL1t4obvYZ-HVG-iyANO2veXcSueoNNewEuWOic
+###TEST 2 — Reuse detection
+### Manual, deliberate reuse of an already-rotated token.
+### Steps:
+###   1. Run "Login" above. Copy the refreshToken cookie value
+###      into @oldToken below.
+###   2. Run "Refresh once" below (rotates it — @oldToken is now
+###      revoked server-side, even though you're about to reuse it).
+###   3. Run "Reuse old token" below, using the SAME @oldToken.
+###   4. Expect 401 "Refresh token reuse detected".
+###   5. Check Mongo: every AuthToken doc sharing that familyId
+###      should now show revoked: true, not just the reused one.
+
+@oldToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTcxZjUzOThlOTM5YjVkOGNjNDVmNzgiLCJpYXQiOjE3ODU4NTMyOTQsImV4cCI6MTc4NjQ1ODA5NH0.K0fLHL1t4obvYZ-HVG-iyANO2veXcSueoNNewEuWOic
+
+### Refresh once (rotates @oldToken, so it's now revoked)
+POST {{baseUrl}}/refresh
+Cookie: refreshToken={{oldToken}}
+
+### Reuse the SAME old token again — should trigger reuse detection
+POST {{baseUrl}}/refresh
+Cookie: refreshToken={{oldToken}}
+
+### ============================================================
+### TEST 3 — Invalid / missing token
+### ============================================================
+
+### 3a — No cookie at all
+### Expect: 401 "No refresh token provided"
+POST {{baseUrl}}/refresh
+
+
+### 3b — Garbage token value
+### Expect: 401 "Invalid or expired refresh token"
+### (fails at verifyRefreshToken, before touching the DB)
+POST {{baseUrl}}/refresh
+Cookie: refreshToken=not.a.real.jwt
+
+## ============================================================
+### TEST 4 — Expired token
+### Hard to test without waiting out the real TTL. To test
+### quickly:
+###   1. Temporarily set refreshTokenTtl to something like '5s'
+###      in config.ts
+###   2. Run "Login" above
+###   3. Wait 6+ seconds
+###   4. Run the request below with that token
+###   5. Expect: 401 "Invalid or expired refresh token"
+###   6. Revert refreshTokenTtl back to its real value afterward
+### ============================================================
+
+@shortLivedToken = PASTE_REFRESH_TOKEN_FROM_LOGIN_HERE
+
+POST {{baseUrl}}/refresh
+Cookie: refreshToken={{shortLivedToken}}

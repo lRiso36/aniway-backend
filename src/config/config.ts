@@ -15,6 +15,9 @@ interface IConfig {
   vapidSubject: string;
   emailUser: string;
   emailAppPassword: string;
+  emailVerificationTtl: string;
+  clientUrl: string;
+  passwordResetTtl: string;
 }
 
 const config: IConfig = {
@@ -33,6 +36,9 @@ const config: IConfig = {
   vapidSubject: process.env.VAPID_SUBJECT || 'mailto:lenaderiso22@gmail.com',
   emailUser: process.env.EMAIL_USER || '',
   emailAppPassword: process.env.EMAIL_APP_PASSWORD || '',
+  emailVerificationTtl: process.env.EMAIL_VERIFICATION_TTL || '12h',
+  clientUrl: 'http://localhost:5174',
+  passwordResetTtl: process.env.PASSWORD_RESET_TTL || '1h',
 };
 
 export default config;
