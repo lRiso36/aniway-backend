@@ -96,6 +96,7 @@ const voiceActorLinkSchema = new Schema<VoiceActorLink>(
   },
   { _id: false }
 );
+
 interface CharacterLink {
   character: Types.ObjectId;
   role: CharacterRole;
