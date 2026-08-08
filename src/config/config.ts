@@ -18,6 +18,7 @@ interface IConfig {
   emailVerificationTtl: string;
   clientUrl: string;
   passwordResetTtl: string;
+  frontendUrl: string;
 }
 
 const config: IConfig = {
@@ -39,6 +40,7 @@ const config: IConfig = {
   emailVerificationTtl: process.env.EMAIL_VERIFICATION_TTL || '12h',
   clientUrl: 'http://localhost:5174',
   passwordResetTtl: process.env.PASSWORD_RESET_TTL || '1h',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5174',
 };
 
 export default config;

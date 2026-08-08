@@ -15,6 +15,7 @@ const router = Router();
 
 router.post('/', usersController.create.bind(usersController));
 router.get('/', usersController.list.bind(usersController));
+
 router.patch(
   '/avatar',
   handleAvatarUpload,
