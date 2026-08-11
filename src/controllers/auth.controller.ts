@@ -5,9 +5,9 @@ import ms from 'ms';
 import type { StringValue } from 'ms';
 import config from '../config/config';
 import { randomBytes, randomUUID } from 'crypto';
+import { Request, Response } from 'express';
 
 import UserModel from '../models/user.model';
-import { Request, Response } from 'express';
 import {
   signAccessToken,
   signRefreshToken,
@@ -37,7 +37,7 @@ class AuthController {
       });
 
       if (existingUser) {
-        const feild = existingUser.email === email ? 'email' : 'username';
+        const feild = existingUser.email === email ? 'Email' : 'Username';
         return res.status(409).json({
           message: `${feild} already in use`,
         });
