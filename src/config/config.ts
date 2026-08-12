@@ -38,9 +38,9 @@ const config: IConfig = {
   emailUser: process.env.EMAIL_USER || '',
   emailAppPassword: process.env.EMAIL_APP_PASSWORD || '',
   emailVerificationTtl: process.env.EMAIL_VERIFICATION_TTL || '12h',
-  clientUrl: 'http://localhost:5173',
+  clientUrl: 'http://localhost:5174',
   passwordResetTtl: process.env.PASSWORD_RESET_TTL || '1h',
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5174',
 };
 
 export default config;
