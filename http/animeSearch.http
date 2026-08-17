@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:5000/api/v1
+
+### Search anime
+GET {{baseUrl}}/anime/search?q=naruto
+
+### Search anime - empty results test
+GET {{baseUrl}}/anime/search?q=asdkfjasdkfj
+
+### Get anime details - Attack on Titan
+GET {{baseUrl}}/anime/16498
+
+### Get anime details - Cowboy Bebop
+GET {{baseUrl}}/anime/1
+
+### Get anime details - repeat call (should hit cache, detailsCached: true)
+GET {{baseUrl}}/anime/16498

@@ -23,21 +23,6 @@ type CharacterRole = 'MAIN' | 'SUPPORTING' | 'BACKGROUND';
 
 type VoiceLanguage = 'ENGLISH' | 'JAPANESE';
 
-type Genre =
-  | 'Action'
-  | 'Adventure'
-  | 'Comedy'
-  | 'Drama'
-  | 'Ecchi'
-  | 'Fantasy'
-  | 'Horror'
-  | 'Mystery'
-  | 'Romance'
-  | 'Sci-Fi'
-  | 'Slice of Life'
-  | 'Sports'
-  | 'Supernatural';
-
 interface FuzzyDate {
   year?: number;
   month?: number;
@@ -120,6 +105,29 @@ const characterLinkSchema = new Schema<CharacterLink>(
   { _id: false }
 );
 
+interface ExternalLink {
+  url: string;
+  site: string;
+  icon: string;
+  color: string;
+}
+
+const ExternalLinksSchema = new Schema<ExternalLink>(
+  {
+    url: { type: String, required: true },
+    site: { type: String, required: true },
+    icon: { type: String },
+    color: { type: String },
+  },
+  { _id: false }
+);
+
+type MediaFormat =
+  'TV' | 'TV_SHORT' | 'MOVIE' | 'SPECIAL' | 'OVA' | 'ONA' | 'MUSIC';
+
+type MediaStatus =
+  'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS';
+
 export interface Anime {
   anilistId: number;
   titleEnglish?: string;
@@ -141,7 +149,11 @@ export interface Anime {
   episodes?: Episode[];
   studios?: StudioLink[];
   characters?: CharacterLink[];
-  genres?: Genre[];
+  genres?: string[];
+  externalLinks?: ExternalLink[];
+  format?: MediaFormat;
+  status?: MediaStatus;
+  duration?: number;
 }
 
 const animeSchema = new Schema<Anime>({
@@ -195,26 +207,17 @@ const animeSchema = new Schema<Anime>({
   episodes: [episodeSchema],
   studios: [studioLinkSchema],
   characters: [characterLinkSchema],
-  genres: [
-    {
-      type: String,
-      enum: [
-        'Action',
-        'Adventure',
-        'Comedy',
-        'Drama',
-        'Ecchi',
-        'Fantasy',
-        'Horror',
-        'Mystery',
-        'Romance',
-        'Sci-Fi',
-        'Slice of Life',
-        'Sports',
-        'Supernatural',
-      ],
-    },
-  ],
+  genres: [{ type: String }],
+  externalLinks: [ExternalLinksSchema],
+  format: {
+    type: String,
+    enum: ['TV', 'TV_SHORT', 'MOVIE', 'SPECIAL', 'OVA', 'ONA', 'MUSIC'],
+  },
+  status: {
+    type: String,
+    enum: ['FINISHED', 'RELEASING', 'NOT_YET_RELEASED', 'CANCELLED', 'HIATUS'],
+  },
+  duration: { type: Number },
 });
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);

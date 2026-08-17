@@ -4,7 +4,14 @@ import BaseController from './base.controller';
 import AnimeModel, { Anime } from '../models/anime.model';
 import SearchCacheModel from '../models/search.model';
 import logger from '../logs/logger';
-import { searchAnimeHelper } from '../services/anime.service';
+import {
+  searchAnimeHelper,
+  getAnimeDetailsHelper,
+} from '../services/anime.service';
+import CharacterModel from '../models/character.model';
+import _ from 'lodash';
+import VoiceActorModel from '../models/voiceActor.model';
+import StudioModel from '../models/studio.model';
 
 class AnimeController extends BaseController<Anime> {
   constructor() {
@@ -89,6 +96,156 @@ class AnimeController extends BaseController<Anime> {
       return res.status(200).json({
         savedAnimes,
       });
+    } catch (error) {
+      logger.error('Error in search anime:', error);
+      res.status(500).json({
+        message: 'Something went wrong',
+      });
+    }
+  }
+
+  async getAnimeDetails(req: Request, res: Response) {
+    try {
+      const anilistId = Number(req.params.anilistId);
+
+      if (!anilistId) {
+        return res.status(400).json({ message: 'No ID provided' });
+      }
+
+      const cachedAnimeDetails = await AnimeModel.findOne({ anilistId })
+        .populate('studios.studio')
+        .populate('characters.character')
+        .populate('characters.voiceActors.voiceActor');
+
+      if (cachedAnimeDetails?.detailsCached) {
+        return res.status(200).json(cachedAnimeDetails);
+      }
+
+      const animeDetails = await getAnimeDetailsHelper(anilistId);
+
+      if (!animeDetails) {
+        return res.status(500).json({
+          message: 'Anime detail search failed.',
+        });
+      }
+
+      //upsert characters
+      const characterBulkMap = animeDetails.characters.map((character) => ({
+        updateOne: {
+          filter: { anilistId: character.anilistId },
+          update: {
+            $set: _.omitBy(
+              {
+                anilistId: character.anilistId,
+                name: character.name,
+                image: character.image,
+              },
+              (value) => value === undefined
+            ),
+          },
+          upsert: true,
+        },
+      }));
+
+      await CharacterModel.bulkWrite(characterBulkMap, { ordered: false });
+
+      const savedCharacters = await CharacterModel.find({
+        anilistId: { $in: animeDetails.characters.map((c) => c.anilistId) },
+      });
+
+      //upsert voice actors
+      const allVoiceActors = animeDetails.characters.flatMap(
+        (character) => character.voiceActors
+      );
+
+      const uniqueVoiceActors = _.uniqBy(allVoiceActors, 'anilistId');
+
+      const voiceActorBulkMap = uniqueVoiceActors.map((actor) => ({
+        updateOne: {
+          filter: { anilistId: actor.anilistId },
+          update: {
+            $set: _.omitBy(
+              {
+                anilistId: actor.anilistId,
+                name: actor.name,
+                image: actor.image,
+              },
+              (value) => value === undefined
+            ),
+          },
+          upsert: true,
+        },
+      }));
+
+      await VoiceActorModel.bulkWrite(voiceActorBulkMap, { ordered: false });
+
+      const savedVoiceActors = await VoiceActorModel.find({
+        anilistId: { $in: uniqueVoiceActors.map((a) => a.anilistId) },
+      });
+
+      const studiosBulkMap = animeDetails.studios.map((studio) => ({
+        updateOne: {
+          filter: { anilistId: studio.anilistId },
+          update: {
+            $set: {
+              anilistId: studio.anilistId,
+              name: studio.name,
+            },
+          },
+          upsert: true,
+        },
+      }));
+
+      await StudioModel.bulkWrite(studiosBulkMap, { ordered: false });
+
+      const savedStudios = await StudioModel.find({
+        anilistId: { $in: animeDetails.studios.map((a) => a.anilistId) },
+      });
+
+      //lookup map
+      const characterById = new Map(
+        savedCharacters.map((c) => [c.anilistId, c])
+      );
+      const voiceActorById = new Map(
+        savedVoiceActors.map((va) => [va.anilistId, va])
+      );
+      const studioById = new Map(savedStudios.map((s) => [s.anilistId, s]));
+
+      //get all required parts
+      const characterLinks = animeDetails.characters.map((character) => ({
+        character: characterById.get(character.anilistId)!._id,
+        role: character.role,
+        voiceActors: character.voiceActors.map((actor) => ({
+          voiceActor: voiceActorById.get(actor.anilistId)!._id,
+          language: actor.language,
+        })),
+      }));
+
+      const studioLinks = animeDetails.studios.map((studio) => ({
+        studio: studioById.get(studio.anilistId)!._id,
+        isAnimationStudio: studio.isAnimationStudio,
+      }));
+
+      const savedAnime = await AnimeModel.findOneAndUpdate(
+        { anilistId },
+        {
+          $set: {
+            ...animeDetails,
+            characters: characterLinks,
+            studios: studioLinks,
+            detailsCached: true,
+          },
+        },
+        { upsert: true, new: true }
+      );
+
+      await savedAnime?.populate([
+        'studios.studio',
+        'characters.character',
+        'characters.voiceActors.voiceActor',
+      ]);
+
+      return res.status(200).json(savedAnime);
     } catch (error) {
       logger.error('Error in search anime:', error);
       res.status(500).json({
