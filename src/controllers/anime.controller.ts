@@ -134,14 +134,11 @@ class AnimeController extends BaseController<Anime> {
         updateOne: {
           filter: { anilistId: character.anilistId },
           update: {
-            $set: _.omitBy(
-              {
-                anilistId: character.anilistId,
-                name: character.name,
-                image: character.image,
-              },
-              (value) => value === undefined
-            ),
+            $set: {
+              anilistId: character.anilistId,
+              name: character.name,
+              image: character.image,
+            },
           },
           upsert: true,
         },
@@ -164,14 +161,11 @@ class AnimeController extends BaseController<Anime> {
         updateOne: {
           filter: { anilistId: actor.anilistId },
           update: {
-            $set: _.omitBy(
-              {
-                anilistId: actor.anilistId,
-                name: actor.name,
-                image: actor.image,
-              },
-              (value) => value === undefined
-            ),
+            $set: {
+              anilistId: actor.anilistId,
+              name: actor.name,
+              image: actor.image,
+            },
           },
           upsert: true,
         },
@@ -206,6 +200,7 @@ class AnimeController extends BaseController<Anime> {
       const characterById = new Map(
         savedCharacters.map((c) => [c.anilistId, c])
       );
+
       const voiceActorById = new Map(
         savedVoiceActors.map((va) => [va.anilistId, va])
       );
