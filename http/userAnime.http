@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:5000/api/v1
+@userId = 6a78a58110cd7fd4b084466d
+@animeId = 6a7b94e7c40e3baefd1f54c8
+
+### Log anime — create/update entry (upsert)
+PATCH {{baseUrl}}/user-anime/log
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "{{animeId}}",
+  "status": "watching",
+  "currentEpisode": 5,
+  "repeatCount": 0,
+  "score": 8,
+  "notes": "pretty good so far"
+}
+
+### Log anime — missing status (should 400)
+PATCH {{baseUrl}}/user-anime/log
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "{{animeId}}"
+}
+
+### Log anime — invalid animeId (should 400)
+PATCH {{baseUrl}}/user-anime/log
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "not-a-real-id",
+  "status": "watching"
+}
+
+### Toggle favorite — first call should favorite (true)
+PATCH {{baseUrl}}/user-anime/toggle-favorite
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "{{animeId}}"
+}
+
+### Toggle favorite — second call should unfavorite (false)
+PATCH {{baseUrl}}/user-anime/toggle-favorite
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "{{animeId}}"
+}
+
+### Toggle favorite — no prior entry (tests upsert + setDefaultsOnInsert)
+PATCH {{baseUrl}}/user-anime/toggle-favorite
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "animeId": "REPLACE_WITH_A_DIFFERENT_ANIME_OBJECTID"
+}
+
+### Remove entry
+DELETE {{baseUrl}}/user-anime/{{animeId}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+### Remove entry — already removed (should 404)
+DELETE {{baseUrl}}/user-anime/{{animeId}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+### Remove entry — invalid animeId (should 400)
+DELETE {{baseUrl}}/user-anime/not-a-real-id
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
