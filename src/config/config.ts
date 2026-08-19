@@ -26,7 +26,7 @@ const config: IConfig = {
   appMode: (process.env.APP_MODE as 'DEV' | 'PROD' | 'STAGING') || 'DEV',
   databaseURL:
     process.env[`${process.env.APP_MODE}_DATABASE_URL`] ||
-    'mongodb://admin:password123@localhost:27017/aniway?authSource=admin',
+    'mongodb://admin:password123@127.0.0.1:27017/aniway?authSource=admin',
   tokenSecret: process.env.TOKEN_SECRET || 'default_token_secret',
   tokenTtl: process.env.TOKEN_TTL || '1h',
   refreshTokenSecret:
