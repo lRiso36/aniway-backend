@@ -30,10 +30,8 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    if (!animeId || !status) {
-      return res
-        .status(400)
-        .json({ message: 'Anime Id and status are required' });
+    if (!animeId) {
+      return res.status(400).json({ message: 'Anime Id is required' });
     }
 
     if (!mongoose.Types.ObjectId.isValid(animeId)) {
@@ -150,9 +148,6 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       });
     }
   }
-  //add review only
-
-  //get status?
 }
 const userAnimeController = new UserAnimeController();
 

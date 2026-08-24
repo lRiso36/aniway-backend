@@ -33,7 +33,7 @@ const userAnimeEntrySchema = new Schema<UserAnimeEntry>(
       required: true,
       default: 'planning',
     },
-    currentEpisode: { type: Number, required: true, default: 0 },
+    currentEpisode: { type: Number },
     // only ever changes when the user explicitly bumps it — never touched
     // automatically by status changes or episode progress
     repeatCount: { type: Number, required: true, default: 0 },
