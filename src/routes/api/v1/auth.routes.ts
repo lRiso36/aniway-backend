@@ -3,11 +3,11 @@ import authController from '../../../controllers/auth.controller';
 
 const router = Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/refresh', authController.refresh);
-router.post('/verify-email', authController.verifyEmail);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+router.post('/register', authController.register.bind(authController));
+router.post('/login', authController.login.bind(authController));
+router.post('/refresh', authController.refresh.bind(authController));
+router.post('/verify-email', authController.verifyEmail.bind(authController));
+router.post('/forgot-password', authController.forgotPassword.bind(authController));
+router.post('/reset-password', authController.resetPassword.bind(authController));
 
 export default router;

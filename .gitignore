@@ -8,4 +8,4 @@ node_modules
 dist
 
 # logs
-*.log
+src/logs/**.log

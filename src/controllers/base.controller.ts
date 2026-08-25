@@ -2,7 +2,14 @@ import { Request, Response } from 'express';
 import { Model } from 'mongoose';
 import _ from 'lodash';
 
+
+import errorHandler from '../utils/error-handler.util';
+import ERROR_MESSAGES from '../constants/error-messages'
 import logger from '../logs/logger';
+import * as jwtUtil from '../utils/jwt.util';
+import appBroker from '../app.broker';
+import config from '../config/config'
+import AppRegistry from '../app.registry';
 
 class BaseController<T> {
   // usable inside this class and any class that extends it
@@ -10,11 +17,26 @@ class BaseController<T> {
   protected model: Model<T>;
   _: typeof _;
   logger: typeof logger;
+  ERROR_MESSAGES: typeof ERROR_MESSAGES;
+  errorHandler: typeof errorHandler;
+  jwtUtil: typeof jwtUtil;
+  broker: typeof appBroker
+  listeners?(): void;
+  config: typeof config;
+  registry: typeof AppRegistry;
 
   constructor(model: Model<T>) {
     this.model = model;
     this._ = _;
     this.logger = logger;
+    this.ERROR_MESSAGES = ERROR_MESSAGES;
+    this.errorHandler = errorHandler;
+    this.jwtUtil = jwtUtil;
+    this.broker = appBroker;
+    this.config = config;
+    this.registry = AppRegistry;
+
+    if (typeof this.listeners === 'function') this.listeners();
   }
 
   async create(req: Request, res: Response) {
@@ -25,19 +47,19 @@ class BaseController<T> {
 
       const newDocument = await document.save();
 
-      if (!newDocument) {
-        throw new Error('Failed to create document');
-      }
+      if(!newDocument) throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+      
+
+      // if (!newDocument) {
+      //   throw new Error('Failed to create document');
+      // }
 
       res.status(201).json({
         message: 'Document created successfully',
         data: newDocument,
       });
-    } catch (error: unknown) {
-      logger.error('Error creating document:', error);
-      res.status(500).json({
-        message: error?.toString(),
-      });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res)
     }
   }
 
@@ -59,18 +81,25 @@ class BaseController<T> {
   }
 
   async getById(req: Request, res: Response) {
-    const found = await this.model.findById(req.params.id);
+    try {
 
-    if (!found) {
-      res.status(404).json({
-        message: 'Document not found',
+      const found = await this.model.findById(req.params.id);
+  
+  
+      if (!found) throw new Error(ERROR_MESSAGES.NOT_FOUND)
+      // if (!found) {
+      //   res.status(404).json({
+      //     message: 'Document not found',
+      //   });
+      // }
+  
+      res.status(200).json({
+        message: 'Document found successfully',
+        data: found,
       });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res)
     }
-
-    res.status(200).json({
-      message: 'Document found successfully',
-      data: found,
-    });
   }
 
   async update(req: Request, res: Response) {

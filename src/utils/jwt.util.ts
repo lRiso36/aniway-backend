@@ -20,6 +20,15 @@ export const signRefreshToken = (userId: string): string => {
   return jwt.sign({ userId }, config.refreshTokenSecret, options);
 };
 
+export const signTokens = (userId: string): {
+  accessToken: string;
+  refreshToken: string;
+} => {
+  const accessToken = signAccessToken(userId);
+  const refreshToken = signRefreshToken(userId);
+  return { accessToken, refreshToken };
+}
+
 export const verifyAccessToken = (token: string): TokenPayload => {
   return jwt.verify(token, config.tokenSecret) as TokenPayload;
 };
@@ -27,3 +36,5 @@ export const verifyAccessToken = (token: string): TokenPayload => {
 export const verifyRefreshToken = (token: string): TokenPayload => {
   return jwt.verify(token, config.refreshTokenSecret) as TokenPayload;
 };
+
+

@@ -1,14 +1,10 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
-import { hashToken } from '../utils/token.util';
-
-//do we need types? is expires at a date or string
 export interface AuthToken {
   userId: Types.ObjectId;
-  familyId: string;
   token: string;
-  expiresAt: Date;
-  revoked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const authTokenSchema = new Schema<AuthToken>({
@@ -17,30 +13,12 @@ const authTokenSchema = new Schema<AuthToken>({
     ref: 'User',
     required: true,
   },
-  familyId: {
-    type: String,
-    required: true,
-  },
   token: {
     type: String,
     required: true,
   },
-  expiresAt: {
-    type: Date,
-    required: true,
-    expires: 0,
-  },
-  revoked: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-});
+}, { timestamps: true });
 
-authTokenSchema.pre('save', async function () {
-  if (!this.isModified('token')) return;
-  this.token = hashToken(this.token);
-});
 
 const AuthTokenModel = mongoose.model<AuthToken>('AuthToken', authTokenSchema);
 

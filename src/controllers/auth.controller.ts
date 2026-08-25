@@ -1,35 +1,33 @@
 import logger from '../logs/logger';
-import _ from 'lodash';
 import bcrypt from 'bcrypt';
 import ms from 'ms';
 import type { StringValue } from 'ms';
 import config from '../config/config';
-import { randomBytes, randomUUID } from 'crypto';
+import { randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 
-import UserModel from '../models/user.model';
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
 } from '../utils/jwt.util';
-import AuthTokenModel from '../models/authToken.model';
+import AuthTokenModel, { AuthToken } from '../models/authToken.model';
 import { hashToken } from '../utils/token.util';
 import VerificationTokenModel from '../models/verificationToken.model';
 import transporter from '../utils/mailer.util';
+import BaseController from './base.controller';
+import { RegisterSchema } from '../validators/auth.validator';
 
-class AuthController {
+class AuthController extends BaseController<AuthToken> {
+  constructor() {
+    super(AuthTokenModel)
+  }
+
   async register(req: Request, res: Response) {
-    try {
-      const email = req.body.email;
-      const username = req.body.username;
-      const password = req.body.password;
+    const UserModel = this.registry.get("userModel")
 
-      if (!email || !username) {
-        return res
-          .status(400)
-          .json({ message: 'Email and username are required' });
-      }
+    try {
+      const {email, username, password} = RegisterSchema.parse(req.body);
 
       //check if existing
       const existingUser = await UserModel.findOne({
@@ -37,10 +35,8 @@ class AuthController {
       });
 
       if (existingUser) {
-        const feild = existingUser.email === email ? 'Email' : 'Username';
-        return res.status(409).json({
-          message: `${feild} already in use`,
-        });
+        // const field = existingUser.email === email ? 'Email' : 'Username';
+        throw new Error(this.ERROR_MESSAGES.CONFLICT);
       }
 
       //register
@@ -48,47 +44,71 @@ class AuthController {
       await newUser.save();
 
       //verification email token
+      const { accessToken, refreshToken } = this.jwtUtil.signTokens(newUser._id.toString())
 
-      try {
-        const rawToken = randomBytes(32).toString('hex');
+      const newAuthToken = new this.model({
+        userId: newUser._id,
+        token: refreshToken,
+      })
 
-        await VerificationTokenModel.create({
-          userId: newUser._id,
-          type: 'email_verification',
-          token: rawToken,
-          expiresAt: new Date(
-            Date.now() + ms(config.emailVerificationTtl as StringValue)
-          ),
-        });
+      // const savedAuthToken = await newAuthToken.save();
+      await newAuthToken.save();
 
-        //verification email
-        const verificationLink = `${config.clientUrl}/verify-email?token=${rawToken}`;
-
-        await transporter.sendMail({
-          from: config.emailUser,
-          to: newUser.email,
-          subject: 'Verify your email',
-          html: `<p>Click the link below to verify your email:</p><a href="${verificationLink}">${verificationLink}</a>`,
-        });
-      } catch (error) {
-        logger.error('Error creating/sending verification token:', error);
-      }
-
-      const userResponse = _.omit(newUser.toObject(), ['password']);
+      this.broker.emit("user:registered", {
+        userId: newUser._id.toString()
+      })
 
       res.status(201).json({
         message: 'User registered successfully',
-        data: userResponse,
-      });
+        data: {
+          accessToken,
+          refreshToken,
+        }
+      })
+
+
+
+
+
+      // try {
+      //   const rawToken = randomBytes(32).toString('hex');
+
+      //   await VerificationTokenModel.create({
+      //     userId: newUser._id,
+      //     type: 'email_verification',
+      //     token: rawToken,
+      //     expiresAt: new Date(
+      //       Date.now() + ms(config.emailVerificationTtl as StringValue)
+      //     ),
+      //   });
+
+      //   //verification email
+      //   const verificationLink = `${config.clientUrl}/verify-email?token=${rawToken}`;
+
+      //   await transporter.sendMail({
+      //     from: config.emailUser,
+      //     to: newUser.email,
+      //     subject: 'Verify your email',
+      //     html: `<p>Click the link below to verify your email:</p><a href="${verificationLink}">${verificationLink}</a>`,
+      //   });
+      // } catch (error) {
+      //   logger.error('Error creating/sending verification token:', error);
+      // }
+
+      // const userResponse = _.omit(newUser.toObject(), ['password']);
+
+      // res.status(201).json({
+      //   message: 'User registered successfully',
+      //   data: userResponse,
+      // });
     } catch (error) {
-      logger.error('Error in register:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async login(req: Request, res: Response) {
+    const UserModel = this.registry.get("userModel")
+
     try {
       const email = req.body.email;
       const password = req.body.password;
@@ -126,11 +146,7 @@ class AuthController {
 
       await AuthTokenModel.create({
         userId: user._id,
-        familyId: randomUUID(),
         token: refreshToken,
-        expiresAt: new Date(
-          Date.now() + ms(config.refreshTokenTtl as StringValue)
-        ),
       });
 
       res.status(200).json({
@@ -149,6 +165,7 @@ class AuthController {
   }
 
   async refresh(req: Request, res: Response) {
+
     try {
       const refreshToken = req.cookies.refreshToken;
 
@@ -164,41 +181,24 @@ class AuthController {
           .json({ message: 'Invalid or expired refresh token' });
       }
 
-      const hashedToken = hashToken(refreshToken);
-      const tokenDoc = await AuthTokenModel.findOne({ token: hashedToken });
-      console.log('Looking for hash:', hashedToken);
-      console.log('Found doc:', tokenDoc);
+      const tokenDoc = await AuthTokenModel.findOne({ token: refreshToken });
 
       if (!tokenDoc) {
         return res.status(401).json({ message: 'Invalid refresh token' });
       }
 
-      if (tokenDoc.revoked) {
-        await AuthTokenModel.updateMany(
-          { familyId: tokenDoc.familyId, revoked: false },
-          { revoked: true }
-        );
-        return res
-          .status(401)
-          .json({ message: 'Refresh token reuse detected' });
-      }
+       //CHECK REDIS
+       //IF BLACKLISTED LOG OUT AND STUFF
 
       const userId = tokenDoc.userId.toString();
 
       const newAccessToken = signAccessToken(userId);
       const newRefreshToken = signRefreshToken(userId);
 
-      tokenDoc.revoked = true;
-      await tokenDoc.save();
-
-      await AuthTokenModel.create({
-        userId: userId,
-        familyId: tokenDoc.familyId,
-        token: newRefreshToken,
-        expiresAt: new Date(
-          Date.now() + ms(config.refreshTokenTtl as StringValue)
-        ),
-      });
+      await AuthTokenModel.updateOne(
+        { userId: userId },
+        { $set: { token: newRefreshToken } },
+      );
 
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
@@ -218,6 +218,7 @@ class AuthController {
   }
 
   async verifyEmail(req: Request, res: Response) {
+    const UserModel = this.registry.get("userModel")
     try {
       const { token } = req.body;
 
@@ -253,6 +254,7 @@ class AuthController {
   }
 
   async forgotPassword(req: Request, res: Response) {
+    const UserModel = this.registry.get("userModel")
     try {
       const { email } = req.body;
 
@@ -304,6 +306,7 @@ class AuthController {
   }
 
   async resetPassword(req: Request, res: Response) {
+    const UserModel = this.registry.get("userModel")
     try {
       const { token } = req.body;
       const { newPassword } = req.body;
@@ -347,9 +350,8 @@ class AuthController {
       await VerificationTokenModel.deleteOne({ _id: tokenDoc._id });
 
       //revoke all sessions and force login
-      await AuthTokenModel.updateMany(
-        { userId: tokenDoc.userId, revoked: false },
-        { revoked: true }
+      await AuthTokenModel.deleteMany(
+        { userId: tokenDoc.userId },
       );
 
       res.status(200).json({ message: 'Password successfully reset' });
