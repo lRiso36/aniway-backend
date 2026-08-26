@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
 
 import BaseController from './base.controller';
 import UserAnimeEntryModel, {
   UserAnimeEntry,
 } from '../models/userAnimeEntry.model';
-import logger from '../logs/logger';
+import {
+  LogAnimeSchema,
+  RemoveAnimeEntrySchema,
+  ToggleFavoriteSchema,
+} from '../validators/userAnime.validators';
 
 class UserAnimeController extends BaseController<UserAnimeEntry> {
   constructor() {
@@ -22,7 +25,8 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       startDate,
       finishDate,
       notes,
-    } = req.body;
+    } = LogAnimeSchema.parse(req.body);
+
     // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
     const userId = req.body.userId;
 
@@ -30,13 +34,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    if (!animeId) {
-      return res.status(400).json({ message: 'Anime Id is required' });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(animeId)) {
-      return res.status(400).json({ message: 'Invalid anime ID' });
-    }
+    //END OF STAND IN
 
     try {
       const savedEntry = await UserAnimeEntryModel.findOneAndUpdate(
@@ -57,10 +55,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
       return res.status(200).json(savedEntry);
     } catch (error) {
-      logger.error('Error in log anime:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
@@ -68,7 +63,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
   // toggle is favorite
   async toggleIsFavorite(req: Request, res: Response) {
-    const { animeId } = req.body;
+    const { animeId } = ToggleFavoriteSchema.parse(req.body);
 
     // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
     const userId = req.body.userId;
@@ -77,13 +72,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    if (!animeId) {
-      return res.status(400).json({ message: 'Anime Id is required' });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(animeId)) {
-      return res.status(400).json({ message: 'Invalid anime ID' });
-    }
+    //END OF STAND IN
 
     try {
       const existing = await UserAnimeEntryModel.findOne({
@@ -105,16 +94,13 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
       return res.status(200).json(entry);
     } catch (error) {
-      logger.error('Error in favorite anime:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   //remove anime from entry
   async removeAnimeEntry(req: Request, res: Response) {
-    const animeId = req.params.animeId as string;
+    const { animeId } = RemoveAnimeEntrySchema.parse(req.params);
 
     // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
     const userId = req.body.userId;
@@ -122,13 +108,8 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
     if (!userId) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
-    if (!animeId) {
-      return res.status(400).json({ message: 'Anime Id is required' });
-    }
 
-    if (!mongoose.Types.ObjectId.isValid(animeId)) {
-      return res.status(400).json({ message: 'Invalid anime ID' });
-    }
+    //END OF STAND IN
 
     try {
       const result = await UserAnimeEntryModel.deleteOne({
@@ -137,15 +118,12 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       });
 
       if (result.deletedCount === 0) {
-        return res.status(404).json({ message: 'Entry not found' });
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
       }
 
       return res.status(200).json({ message: 'Entry removed' });
     } catch (error) {
-      logger.error('Error in remove anime:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 }

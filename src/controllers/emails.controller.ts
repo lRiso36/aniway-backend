@@ -1,7 +1,7 @@
-import BaseController from "./base.controller";
-import Email, { IEmail } from "../models/email.model";
+import BaseController from './base.controller';
+import Email, { IEmail } from '../models/email.model';
 
-import transporter from '../utils/mailer.util'
+import transporter from '../utils/mailer.util';
 
 class EmailsController extends BaseController<IEmail> {
   transporter: typeof transporter;
@@ -14,46 +14,55 @@ class EmailsController extends BaseController<IEmail> {
   async send(to: string, subject: string, text: string, html?: string) {
     try {
       const mailOptions = {
-      from: this.config.emailUser,
-      to,
-      subject,
-      text,
-      html
+        from: this.config.emailUser,
+        to,
+        subject,
+        text,
+        html,
+      };
+
+      const tranport = await this.transporter.sendMail(mailOptions);
+      console.log(tranport);
+
+      const email = new Email({
+        to,
+        subject,
+        text,
+        html,
+        // messageId: tranport.messageId
+      });
+
+      await email.save();
+    } catch (error) {
+      this.logger.error('Error in send', error);
     }
-
-    const tranport = await this.transporter.sendMail(mailOptions);
-    console.log(tranport);
-    
-    const email = new Email({
-      to,
-      subject,
-      text,
-      html,
-      // messageId: tranport.messageId
-    })
-
-    await email.save();
-  } catch (error) {
-    this.logger.error('Error in send', error);
-  }
-
   }
 
   // FINISH THIS
 
   listeners() {
-    this.broker.on("user:registered", async (user) => {
-      this.logger.info("user:registerd event received", user);
-      
-      const UserModel = this.registry.get("userModel");
+    this.broker.on('user:registered', async (user) => {
+      this.logger.info('user:registerd event received', user);
+
+      const UserModel = this.registry.get('userModel');
       const foundUser = await UserModel.findById(user.userId);
       this.send(
         foundUser.email,
         'Verify your email',
         'Click the link below to verify your email:',
-        '<a href="TODO_VERIFICATION_LINK">TODO_VERIFICATION_LINK</a>',
-      )
-    })
+        '<a href="TODO_VERIFICATION_LINK">TODO_VERIFICATION_LINK</a>'
+      );
+    });
+
+    this.broker.on('forgot:password', async (user, email) => {
+      this.logger.info('forgot:password event received', user, email);
+      this.send(
+        user.email,
+        'Reset your password',
+        'Click the link below to reset your password:',
+        '<a href="TODO_RESET_LINK">TODO_RESET_LINK</a>'
+      );
+    });
   }
 }
 

@@ -12,6 +12,10 @@ import CharacterModel from '../models/character.model';
 import _ from 'lodash';
 import VoiceActorModel from '../models/voiceActor.model';
 import StudioModel from '../models/studio.model';
+import {
+  GetAnimeByIdSchema,
+  SearchAnimeSchema,
+} from '../validators/anime.validators';
 
 class AnimeController extends BaseController<Anime> {
   constructor() {
@@ -20,11 +24,7 @@ class AnimeController extends BaseController<Anime> {
 
   async searchAnime(req: Request, res: Response) {
     try {
-      const query = String(req.query.q).trim().toLowerCase();
-
-      if (!query) {
-        return res.status(400).json({ message: 'No query provided' });
-      }
+      const { q: query } = SearchAnimeSchema.parse(req.query);
 
       //search database for search query and matching results
       const cached = await SearchCacheModel.findOne({ query }).populate(
@@ -68,9 +68,8 @@ class AnimeController extends BaseController<Anime> {
       });
 
       //on bulk write failure
-      if (savedAnimes.length === 0) {
-        throw new Error(`Failed to save any anime for query "${query}`);
-      }
+      if (savedAnimes.length === 0)
+        throw new Error(this.ERROR_MESSAGES.SEARCH_FAILED);
 
       if (savedAnimes.length < apiResults.length) {
         const savedIds = new Set(savedAnimes.map((a) => a.anilistId));
@@ -97,20 +96,13 @@ class AnimeController extends BaseController<Anime> {
         savedAnimes,
       });
     } catch (error) {
-      logger.error('Error in search anime:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async getAnimeDetails(req: Request, res: Response) {
     try {
-      const anilistId = Number(req.params.anilistId);
-
-      if (!anilistId) {
-        return res.status(400).json({ message: 'No ID provided' });
-      }
+      const { anilistId } = GetAnimeByIdSchema.parse(req.params);
 
       const cachedAnimeDetails = await AnimeModel.findOne({ anilistId })
         .populate('studios.studio')
@@ -124,9 +116,7 @@ class AnimeController extends BaseController<Anime> {
       const animeDetails = await getAnimeDetailsHelper(anilistId);
 
       if (!animeDetails) {
-        return res.status(500).json({
-          message: 'Anime detail search failed.',
-        });
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
       }
 
       //upsert characters
@@ -242,10 +232,7 @@ class AnimeController extends BaseController<Anime> {
 
       return res.status(200).json(savedAnime);
     } catch (error) {
-      logger.error('Error in search anime:', error);
-      res.status(500).json({
-        message: 'Something went wrong',
-      });
+      this.errorHandler(error as Error, req, res);
     }
   }
 }

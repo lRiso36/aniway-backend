@@ -14,20 +14,25 @@ import {
 import AuthTokenModel, { AuthToken } from '../models/authToken.model';
 import { hashToken } from '../utils/token.util';
 import VerificationTokenModel from '../models/verificationToken.model';
-import transporter from '../utils/mailer.util';
 import BaseController from './base.controller';
-import { RegisterSchema } from '../validators/auth.validator';
+import {
+  ForgotPasswordSchema,
+  LoginSchema,
+  RegisterSchema,
+  ResetPasswordSchema,
+  VerifyEmailSchema,
+} from '../validators/auth.validator';
 
 class AuthController extends BaseController<AuthToken> {
   constructor() {
-    super(AuthTokenModel)
+    super(AuthTokenModel);
   }
 
   async register(req: Request, res: Response) {
-    const UserModel = this.registry.get("userModel")
+    const UserModel = this.registry.get('userModel');
 
     try {
-      const {email, username, password} = RegisterSchema.parse(req.body);
+      const { email, username, password } = RegisterSchema.parse(req.body);
 
       //check if existing
       const existingUser = await UserModel.findOne({
@@ -35,8 +40,11 @@ class AuthController extends BaseController<AuthToken> {
       });
 
       if (existingUser) {
-        // const field = existingUser.email === email ? 'Email' : 'Username';
-        throw new Error(this.ERROR_MESSAGES.CONFLICT);
+        if (existingUser.email === email) {
+          throw new Error(this.ERROR_MESSAGES.EMAIL_TAKEN);
+        } else {
+          throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
+        }
       }
 
       //register
@@ -44,31 +52,30 @@ class AuthController extends BaseController<AuthToken> {
       await newUser.save();
 
       //verification email token
-      const { accessToken, refreshToken } = this.jwtUtil.signTokens(newUser._id.toString())
+      const { accessToken, refreshToken } = this.jwtUtil.signTokens(
+        newUser._id.toString()
+      );
 
       const newAuthToken = new this.model({
         userId: newUser._id,
         token: refreshToken,
-      })
+      });
 
       // const savedAuthToken = await newAuthToken.save();
       await newAuthToken.save();
 
-      this.broker.emit("user:registered", {
-        userId: newUser._id.toString()
-      })
+      this.broker.emit('user:registered', {
+        userId: newUser._id.toString(),
+        email: newUser.email,
+      });
 
       res.status(201).json({
         message: 'User registered successfully',
         data: {
           accessToken,
           refreshToken,
-        }
-      })
-
-
-
-
+        },
+      });
 
       // try {
       //   const rawToken = randomBytes(32).toString('hex');
@@ -107,28 +114,21 @@ class AuthController extends BaseController<AuthToken> {
   }
 
   async login(req: Request, res: Response) {
-    const UserModel = this.registry.get("userModel")
+    const UserModel = this.registry.get('userModel');
 
     try {
-      const email = req.body.email;
-      const password = req.body.password;
-
-      if (!email || !password) {
-        return res
-          .status(400)
-          .json({ message: 'Email and password are required' });
-      }
+      const { email, password } = LoginSchema.parse(req.body);
 
       const user = await UserModel.findOne({ email }).select('+password');
 
       if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        throw new Error(this.ERROR_MESSAGES.INVALID_CREDENTIALS);
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        throw new Error(this.ERROR_MESSAGES.INVALID_CREDENTIALS);
       }
 
       const userId = user._id.toString();
@@ -159,13 +159,11 @@ class AuthController extends BaseController<AuthToken> {
         },
       });
     } catch (error) {
-      logger.error('Error in login:', error);
-      res.status(500).json({ message: 'Something went wrong' });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async refresh(req: Request, res: Response) {
-
     try {
       const refreshToken = req.cookies.refreshToken;
 
@@ -176,19 +174,17 @@ class AuthController extends BaseController<AuthToken> {
       try {
         await verifyRefreshToken(refreshToken);
       } catch {
-        return res
-          .status(401)
-          .json({ message: 'Invalid or expired refresh token' });
+        throw new Error(this.ERROR_MESSAGES.UNAUTHORIZED);
       }
 
       const tokenDoc = await AuthTokenModel.findOne({ token: refreshToken });
 
       if (!tokenDoc) {
-        return res.status(401).json({ message: 'Invalid refresh token' });
+        throw new Error(this.ERROR_MESSAGES.UNAUTHORIZED);
       }
 
-       //CHECK REDIS
-       //IF BLACKLISTED LOG OUT AND STUFF
+      //CHECK REDIS
+      //IF BLACKLISTED LOG OUT AND STUFF
 
       const userId = tokenDoc.userId.toString();
 
@@ -197,7 +193,7 @@ class AuthController extends BaseController<AuthToken> {
 
       await AuthTokenModel.updateOne(
         { userId: userId },
-        { $set: { token: newRefreshToken } },
+        { $set: { token: newRefreshToken } }
       );
 
       res.cookie('refreshToken', newRefreshToken, {
@@ -212,21 +208,14 @@ class AuthController extends BaseController<AuthToken> {
         accessToken: newAccessToken,
       });
     } catch (error) {
-      logger.error('Error in refresh:', error);
-      res.status(500).json({ message: 'Something went wrong' });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async verifyEmail(req: Request, res: Response) {
-    const UserModel = this.registry.get("userModel")
+    const UserModel = this.registry.get('userModel');
     try {
-      const { token } = req.body;
-
-      if (!token) {
-        return res
-          .status(400)
-          .json({ message: 'Verification token is required' });
-      }
+      const { token } = VerifyEmailSchema.parse(req.body);
 
       //hash token and look it up
       const hashedToken = hashToken(token);
@@ -235,11 +224,7 @@ class AuthController extends BaseController<AuthToken> {
         type: 'email_verification',
       });
 
-      if (!tokenDoc) {
-        return res
-          .status(400)
-          .json({ message: 'Invalid or expired verification token' });
-      }
+      if (!tokenDoc) throw new Error(this.ERROR_MESSAGES.INVALID_TOKEN);
 
       //update verified and delete used token
       await UserModel.findByIdAndUpdate(tokenDoc.userId, { isVerified: true });
@@ -248,19 +233,14 @@ class AuthController extends BaseController<AuthToken> {
 
       res.status(200).json({ message: 'Email veriified successfully' });
     } catch (error) {
-      logger.error('Error in verifyEmail:', error);
-      res.status(500).json({ message: 'Something went wrong' });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async forgotPassword(req: Request, res: Response) {
-    const UserModel = this.registry.get("userModel")
+    const UserModel = this.registry.get('userModel');
     try {
-      const { email } = req.body;
-
-      if (!email) {
-        return res.status(400).json({ message: 'Email is required' });
-      }
+      const { email } = ForgotPasswordSchema.parse(req.body);
 
       const user = await UserModel.findOne({ email });
 
@@ -282,14 +262,20 @@ class AuthController extends BaseController<AuthToken> {
             ),
           });
 
-          const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`;
-
-          await transporter.sendMail({
-            from: config.emailUser,
-            to: user.email,
-            subject: 'Reset your password',
-            html: `<p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
+          //possibly send over token as well?
+          this.broker.emit('forgot:password', {
+            userId: user._id.toString(),
+            email: user.email,
           });
+
+          // const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`;
+
+          // await transporter.sendMail({
+          //   from: config.emailUser,
+          //   to: user.email,
+          //   subject: 'Reset your password',
+          //   html: `<p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
+          // });
         } catch (error) {
           logger.error('Error creating/sending password reset token:', error);
         }
@@ -300,26 +286,14 @@ class AuthController extends BaseController<AuthToken> {
           'If an account with that email exists, a reset link has been sent.',
       });
     } catch (error) {
-      logger.error('Error in forgotPassword:', error);
-      res.status(500).json({ message: 'Something went wrong' });
+      this.errorHandler(error as Error, req, res);
     }
   }
 
   async resetPassword(req: Request, res: Response) {
-    const UserModel = this.registry.get("userModel")
+    const UserModel = this.registry.get('userModel');
     try {
-      const { token } = req.body;
-      const { newPassword } = req.body;
-
-      if (!token) {
-        return res
-          .status(400)
-          .json({ message: 'Verification token is required' });
-      }
-
-      if (!newPassword) {
-        return res.status(400).json({ message: 'New password is required' });
-      }
+      const { token, newPassword } = ResetPasswordSchema.parse(req.body);
 
       //hash token and look it up
       const hashedToken = hashToken(token);
@@ -329,18 +303,14 @@ class AuthController extends BaseController<AuthToken> {
       });
 
       if (!tokenDoc) {
-        return res
-          .status(400)
-          .json({ message: 'Invalid or expired verification token' });
+        throw new Error(this.ERROR_MESSAGES.INVALID_TOKEN);
       }
 
       //update password
       const user = await UserModel.findById(tokenDoc.userId);
 
       if (!user) {
-        return res
-          .status(400)
-          .json({ message: 'Invalid or expired verification token' });
+        throw new Error(this.ERROR_MESSAGES.INVALID_TOKEN);
       }
 
       user.password = newPassword;
@@ -350,14 +320,11 @@ class AuthController extends BaseController<AuthToken> {
       await VerificationTokenModel.deleteOne({ _id: tokenDoc._id });
 
       //revoke all sessions and force login
-      await AuthTokenModel.deleteMany(
-        { userId: tokenDoc.userId },
-      );
+      await AuthTokenModel.deleteMany({ userId: tokenDoc.userId });
 
       res.status(200).json({ message: 'Password successfully reset' });
     } catch (error) {
-      logger.error('Error in resetPassword:', error);
-      res.status(500).json({ message: 'Something went wrong' });
+      this.errorHandler(error as Error, req, res);
     }
   }
 }
