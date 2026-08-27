@@ -144,18 +144,33 @@ class AuthController extends BaseController<AuthToken> {
         path: '/',
       });
 
-      await AuthTokenModel.create({
-        userId: user._id,
-        token: refreshToken,
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: ms(config.tokenTtl as StringValue),
       });
+
+      const authTokenDoc = await AuthTokenModel.findOne({ userId: user._id });
+
+      if (authTokenDoc) {
+        // update existing doc with new refresh token
+        await this.model.updateOne(
+          { userId: user._id },
+          { $set: { token: refreshToken } }
+        );
+      } else {
+        await this.model.create({
+          userId: user._id,
+          token: refreshToken,
+        });
+      }
 
       res.status(200).json({
         message: 'Login successful',
-        accessToken,
-        user: {
-          id: userId,
-          username: user.username,
-          email: user.email,
+        data: {
+          accessToken,
+          refreshToken,
         },
       });
     } catch (error) {
@@ -215,23 +230,23 @@ class AuthController extends BaseController<AuthToken> {
   async verifyEmail(req: Request, res: Response) {
     const UserModel = this.registry.get('userModel');
     try {
-      const { token } = VerifyEmailSchema.parse(req.body);
+      const { token } = VerifyEmailSchema.parse(req.params);
 
-      //hash token and look it up
-      const hashedToken = hashToken(token);
-      const tokenDoc = await VerificationTokenModel.findOne({
-        token: hashedToken,
-        type: 'email_verification',
+      const decoded = this.jwtUtil.verifyAccessToken(token);
+
+      const userId = decoded.userId;
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
+
+      await UserModel.findByIdAndUpdate(userId, {
+        $set: { isVerified: true },
       });
 
-      if (!tokenDoc) throw new Error(this.ERROR_MESSAGES.INVALID_TOKEN);
+      res.redirect(`${config.clientUrl}/login?verified=true`);
 
-      //update verified and delete used token
-      await UserModel.findByIdAndUpdate(tokenDoc.userId, { isVerified: true });
-
-      await VerificationTokenModel.deleteOne({ _id: tokenDoc._id });
-
-      res.status(200).json({ message: 'Email veriified successfully' });
+      res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
@@ -267,15 +282,6 @@ class AuthController extends BaseController<AuthToken> {
             userId: user._id.toString(),
             email: user.email,
           });
-
-          // const resetLink = `${config.clientUrl}/reset-password?token=${rawToken}`;
-
-          // await transporter.sendMail({
-          //   from: config.emailUser,
-          //   to: user.email,
-          //   subject: 'Reset your password',
-          //   html: `<p>Click the link below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
-          // });
         } catch (error) {
           logger.error('Error creating/sending password reset token:', error);
         }

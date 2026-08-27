@@ -43,6 +43,9 @@ class EmailsController extends BaseController<IEmail> {
   listeners() {
     this.broker.on('user:registered', async (user) => {
       this.logger.info('user:registerd event received', user);
+      const accessToken = this.jwtUtil.signAccessToken(user.userId);
+
+      const link = `http://localhost:5000/api/v1/auth/verify-email/${accessToken}`;
 
       const UserModel = this.registry.get('userModel');
       const foundUser = await UserModel.findById(user.userId);
@@ -50,7 +53,7 @@ class EmailsController extends BaseController<IEmail> {
         foundUser.email,
         'Verify your email',
         'Click the link below to verify your email:',
-        '<a href="TODO_VERIFICATION_LINK">TODO_VERIFICATION_LINK</a>'
+        `<a href="${link}">Click to verify</a>`
       );
     });
 

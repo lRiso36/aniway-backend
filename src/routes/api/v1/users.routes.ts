@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import usersController from '../../../controllers/users.controller';
-import { handleAvatarUpload } from '../../../middleware/upload';
+import { handleAvatarUpload } from '../../../middlewares/upload';
+import { authMiddleware } from '../../../middlewares';
 
 const router = Router();
 
@@ -15,6 +16,16 @@ const router = Router();
 
 router.post('/', usersController.create.bind(usersController));
 router.get('/', usersController.list.bind(usersController));
+
+router.get(
+  '/me',
+  authMiddleware,
+  (req, res, next) => {
+    console.log('TIMESTAMP', new Date().toISOString());
+    next();
+  },
+  usersController.me.bind(usersController)
+);
 
 router.patch(
   '/avatar',

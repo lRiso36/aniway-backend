@@ -4,6 +4,7 @@ import logger from '../logs/logger';
 import { Request, Response } from 'express';
 import path from 'path';
 import { writeFile } from 'fs/promises';
+// import { AvatarFileSchema } from '../validators/users.validators';
 class UsersController extends BaseController<User> {
   constructor() {
     super(UserModel);
@@ -12,6 +13,7 @@ class UsersController extends BaseController<User> {
   async updateAvatar(req: Request, res: Response) {
     try {
       const file = req.file;
+      // const {file} = AvatarFileSchema.parse(req.file);
 
       if (!file) {
         return res.status(400).json({
@@ -41,9 +43,19 @@ class UsersController extends BaseController<User> {
       });
     }
   }
-  method() {
-    // this.logger.info("hello world")
-    // this._.map([1, 2, 3], (n) => n * 2);
+
+  async me(req: Request, res: Response) {
+    const userId = req.meta?.user?._id;
+    console.log('userId =', userId);
+
+    const user = await this.model
+      .findById(userId)
+      .select('_id email username displayName bio avatar');
+
+    return res.status(200).json({
+      message: 'user retrieved',
+      data: { user, userId },
+    });
   }
 }
 

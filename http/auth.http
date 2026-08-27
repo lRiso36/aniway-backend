@@ -33,8 +33,8 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser1",
-  "email": "different@example.com",
+  "username": "testuser1111",
+  "email": "lenaderiso22@gmail.com",
   "password": "password123"
 }
 
@@ -45,8 +45,9 @@ Content-Type: application/json
 
 {
   "email": "lenaderiso22@gmail.com",
-  "password": "newpassword456"
+  "password": "password123"
 }
+
 
 ### Login - missing fields (should return 400)
 POST {{baseUrl}}/auth/login

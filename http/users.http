@@ -13,5 +13,24 @@ Content-Type: application/json
 
 ### list users
 GET {{baseUrl}}?username=testuser1
+
+
+### set cookies & login
+# @name login
+POST http://localhost:5000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "lenaderiso22@gmail.com",
+  "password": "password123"
+}
+
+###
+
+@accessToken = {{login.response.body.data.accessToken}}
+
+### me
+GET {{baseUrl}}/me
+Authorization: Bearer {{accessToken}}
           
 
