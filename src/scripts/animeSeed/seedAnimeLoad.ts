@@ -1,12 +1,13 @@
 import fs from 'fs';
-import { AniListDetailResult, AniListMediaDetailResponse } from '../types/anilist.types';
-import { formatAnimeDetails } from '../services/anime.service';
-import logger from '../logs/logger';
+import { AniListDetailResult, AniListMediaDetailResponse } from '../../types/anilist.types';
+import { formatAnimeDetails } from '../../services/anime.service';
+import logger from '../../logs/logger';
 import _ from 'lodash';
-import CharacterModel from '../models/character.model';
-import VoiceActorModel from '../models/voiceActor.model';
-import StudioModel from '../models/studio.model';
-import AnimeModel from '../models/anime.model';
+import CharacterModel from '../../models/character.model';
+import VoiceActorModel from '../../models/voiceActor.model';
+import StudioModel from '../../models/studio.model';
+import AnimeModel from '../../models/anime.model';
+import connectDB from '../../config/db';
 
 const INPUT_PATH = 'src/scripts/data/anilistSeed.jsonl';
 const BATCH_SIZE = 500;
@@ -21,6 +22,7 @@ async function loadAnimeData(animes: AniListDetailResult[]) {
     for (let i = 0; i < animes.length; i += BATCH_SIZE) {
         const batch = animes.slice(i, i + BATCH_SIZE);
         await processBatch(batch)
+        logger.info(`batch ${i} to ${i + BATCH_SIZE} completed`)
     }
 }
 
@@ -159,11 +161,12 @@ export async function processBatch(batch: AniListDetailResult[]) {
                     detailsCached: true
                 },
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         )
 
         if (!savedAnime) logger.error(`Failed to save anime with id: ${anime.anilistId}`)
     }
+    logger.info("Batch ")
 }
 
 async function runLoad() {
@@ -172,4 +175,10 @@ async function runLoad() {
     await loadAnimeData(formatted);
 }
 
-runLoad()
+connectDB()
+.then(() => runLoad())
+.then(() => process.exit(0))
+.catch((err) => {
+    console.error('Load script failed:', err);
+    process.exit(1);
+})

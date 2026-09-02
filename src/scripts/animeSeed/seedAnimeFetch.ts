@@ -13,8 +13,8 @@
 // page, so if it dies at page 220 you're not restarting from 
 // page 1.
 import fs from 'fs';
-import { fetchAnimeByIds } from "../services/fetchAnimePage";
-import { AniListMediaDetailResponse } from '../types/anilist.types';
+import { fetchAnimeByIds } from "../../services/fetchAnimePage";
+import { AniListMediaDetailResponse } from '../../types/anilist.types';
 
 const OUTPUT_PATH = 'src/scripts/data/anilistSeed.jsonl';
 const PER_PAGE = 50
