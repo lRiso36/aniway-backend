@@ -11,3 +11,5 @@ dist
 src/logs/**.log
 
 src/scripts/data/*.jsonl
+
+src/scripts/data/anilistSeed.jsonl
