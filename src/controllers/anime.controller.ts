@@ -210,7 +210,7 @@ class AnimeController extends BaseController<Anime> {
         studio: studioById.get(studio.anilistId)!._id,
         isAnimationStudio: studio.isAnimationStudio,
       }));
-
+ 
       const savedAnime = await AnimeModel.findOneAndUpdate(
         { anilistId },
         {

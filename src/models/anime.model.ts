@@ -55,12 +55,14 @@ const episodeSchema = new Schema<Episode>(
 interface StudioLink {
   studio: Types.ObjectId;
   isAnimationStudio: boolean;
+  isMain: boolean;
 }
 
 const studioLinkSchema = new Schema<StudioLink>(
   {
     studio: { type: Schema.Types.ObjectId, required: true, ref: 'Studio' },
     isAnimationStudio: { type: Boolean, required: true, default: false },
+    isMain: { type: Boolean, required: true, default: false },
   },
   { _id: false }
 );
@@ -128,32 +130,71 @@ type MediaFormat =
 type MediaStatus =
   'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS';
 
+interface Tag {
+  name: string;
+  rank: number; //how relevant it is to the anime
+  isSpoiler: boolean; //blur out if its a spoiler for UX
+}
+
+const tagSchema = new Schema<Tag>(
+  {
+    name: { type: String, required: true },
+    rank: { type: Number, required: true },
+    isSpoiler: { type: Boolean, required: true, default: false },
+  },
+  { _id: false }
+);
+
+//id will join site to make a url link
+interface Trailer {
+  id: string;
+  site: string;
+  thumbnail: string | null;
+}
+
+const trailerSchema = new Schema<Trailer>(
+  {
+    id: { type: String, required: true },
+    site: { type: String, required: true },
+    thumbnail: { type: String },
+  },
+  { _id: false }
+);
+
 export interface Anime {
-  anilistId: number;
-  titleEnglish?: string;
-  titleRomaji: string;
-  coverLarge: string;
-  coverExtraLarge?: string;
-  bannerImage?: string;
-  episodeCount?: number;
-  description?: string;
+  anilistId: number; // 
+  titleEnglish?: string; // 
+  titleRomaji: string; // 
+  coverLarge: string; // 
+  coverExtraLarge?: string; // 
+  bannerImage?: string; // 
+  episodeCount?: number; // 
+  description?: string; // 
   cachedAt: Date;
-  malId?: number;
+  malId?: number; // 
   detailsCached: boolean;
-  averageScore?: number;
-  source?: MediaSource;
-  season?: Season;
-  seasonYear?: number;
-  startDate?: FuzzyDate;
-  endDate?: FuzzyDate;
+  averageScore?: number; // 
+  source?: MediaSource; // 
+  season?: Season; // 
+  seasonYear?: number; // 
+  startDate?: FuzzyDate; // 
+  endDate?: FuzzyDate; // 
   episodes?: Episode[];
-  studios?: StudioLink[];
-  characters?: CharacterLink[];
-  genres?: string[];
-  externalLinks?: ExternalLink[];
-  format?: MediaFormat;
-  status?: MediaStatus;
-  duration?: number;
+  episodesCached: boolean;
+  studios: StudioLink[]; // 
+  characters: CharacterLink[]; // 
+  genres: string[]; // 
+  externalLinks: ExternalLink[]; // 
+  format?: MediaFormat; // 
+  status?: MediaStatus; // 
+  duration?: number; // 
+  tags?: Tag[]; // 
+  synonyms: string[]; // alternate titles for search 
+  popularity: number; //how many have this in their list 
+  favourites: number; //how many favorited this 
+  isAdult: boolean; //filtering no adult shows 
+  trailer?: Trailer; // 
+  coverColor?: string; //for UX design //
 }
 
 const animeSchema = new Schema<Anime>({
@@ -205,6 +246,7 @@ const animeSchema = new Schema<Anime>({
     day: { type: Number },
   },
   episodes: [episodeSchema],
+  episodesCached: { type: Boolean, required: true, default: false },
   studios: [studioLinkSchema],
   characters: [characterLinkSchema],
   genres: [{ type: String }],
@@ -218,6 +260,13 @@ const animeSchema = new Schema<Anime>({
     enum: ['FINISHED', 'RELEASING', 'NOT_YET_RELEASED', 'CANCELLED', 'HIATUS'],
   },
   duration: { type: Number },
+  tags: [tagSchema],
+  synonyms: [{ type: String }],
+  popularity: { type: Number, required: true, default: 0 },
+favourites: { type: Number, required: true, default: 0 },
+  isAdult: { type: Boolean, required: true, default: false },
+  trailer: trailerSchema,
+  coverColor: { type: String },
 });
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);

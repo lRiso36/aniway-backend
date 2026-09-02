@@ -10,6 +10,7 @@ export interface AniListMediaResponse {
   coverImage: {
     large: string;
     extraLarge: string | null;
+    color: string | null;
   };
   bannerImage: string | null;
   startDate: {
@@ -21,6 +22,17 @@ export interface AniListMediaResponse {
   averageScore: number | null;
   genres: string[];
   description: string | null;
+  popularity: number;
+  favourites: number;
+  isAdult: boolean;
+  tags: {
+    name: string;
+    rank: number;
+    isMediaSpoiler: boolean;
+  }[] | null;
+  format: MediaFormat | null;
+  status: MediaStatus | null;
+  synonyms: string[];
 }
 
 type MediaFormat =
@@ -29,8 +41,6 @@ type MediaStatus =
   'FINISHED' | 'RELEASING' | 'NOT_YET_RELEASED' | 'CANCELLED' | 'HIATUS';
 
 export interface AniListMediaDetailResponse extends AniListMediaResponse {
-  format: MediaFormat | null;
-  status: MediaStatus | null;
   duration: number | null;
   source: string | null;
   season: string | null;
@@ -57,10 +67,13 @@ export interface AniListMediaDetailResponse extends AniListMediaResponse {
     }[];
   };
   studios: {
-    nodes: {
-      id: number;
-      name: string;
-      isAnimationStudio: boolean;
+    edges: {
+      isMain: boolean;
+      node: {
+        id: number;
+        name: string;
+        isAnimationStudio: boolean;
+      };
     }[];
   };
   externalLinks: {
@@ -69,6 +82,11 @@ export interface AniListMediaDetailResponse extends AniListMediaResponse {
     icon: string | null;
     color: string | null;
   }[];
+  trailer: {
+  id: string;
+  site: string;
+  thumbnail: string | null;
+} | null;
 }
 
 //transformed shapes to match Mongo schema
@@ -79,12 +97,24 @@ export interface AniListSearchResult {
   titleRomaji: string;
   coverLarge: string;
   coverExtraLarge?: string;
+  coverColor?: string;
   bannerImage?: string;
   episodeCount?: number;
   averageScore?: number;
   genres: string[];
   description?: string;
   startDate?: { year?: number; month?: number; day?: number };
+  popularity: number;
+  favourites: number;
+  isAdult: boolean;
+  tags?: AniListTagResult[];
+  synonyms: string[];
+}
+
+export interface AniListTagResult {
+  name: string;
+  rank: number;
+  isSpoiler: boolean;
 }
 
 export interface AniListVoiceActorResult {
@@ -106,6 +136,7 @@ export interface AniListStudioResult {
   anilistId: number;
   name: string;
   isAnimationStudio: boolean;
+  isMain: boolean;
 }
 
 export interface AniListExternalLinkResult {
@@ -113,6 +144,12 @@ export interface AniListExternalLinkResult {
   site: string;
   icon?: string;
   color?: string;
+}
+
+export interface AniListTrailerResult {
+  id: string;
+  site: string;
+  thumbnail?: string;
 }
 
 export interface AniListDetailResult extends AniListSearchResult {
@@ -127,4 +164,5 @@ export interface AniListDetailResult extends AniListSearchResult {
   characters: AniListCharacterResult[];
   studios: AniListStudioResult[];
   externalLinks: AniListExternalLinkResult[];
+  trailer?: AniListTrailerResult;
 }
