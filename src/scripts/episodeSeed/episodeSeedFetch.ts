@@ -10,7 +10,7 @@ const THROTTLE_MS = 6000; // TODO: set from Jikan docs
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function getTargetAnime() {
+export async function getTargetAnime() {
     return AnimeModel.find(
         { detailsCached: true, episodesCached: { $ne: true } },
         { anilistId: 1, malId: 1, episodeCount: 1 }

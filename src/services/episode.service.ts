@@ -7,6 +7,13 @@ const WAIT_MS = 1200
 const MAX_RETRIES = 3;
 const REQUEST_DELAY_MS = 350;
 
+export class JikanInfrastructureError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'JikanInfrastructureError';
+  }
+}
+
 async function fetchPageWithRetry(malId: number, pageNumber: number, retries = MAX_RETRIES): Promise<any> {
     const response = await fetch(`${JIKAN_BASE}/${malId}/episodes?page=${pageNumber}`);
 
@@ -14,7 +21,7 @@ async function fetchPageWithRetry(malId: number, pageNumber: number, retries = M
     
     if (response.status === 429 || response.status >= 500) {
         if (retries <= 0) {
-            throw new Error(`Rate limited or server error on anime with id ${malId} out of retries`);
+            throw new JikanInfrastructureError(`Rate limited or server error on anime with id ${malId} out of retries`);
         }
 
         logger.error(`Got ${response.status} on id ${malId} (page ${pageNumber}), waiting ${WAIT_MS}ms`);
@@ -51,3 +58,4 @@ export async function fetchEpisodesForOneAnime(malId: number): Promise<JikanEpis
 
     return episodes;
 }
+

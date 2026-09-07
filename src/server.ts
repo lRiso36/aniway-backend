@@ -2,11 +2,13 @@ import app from './app';
 import config from './config/config';
 
 import connectDB from './config/db';
+import { startScheduledJobs } from './jobs/scheduler';
 
 connectDB()
   .then(() => {
     const server = app.listen(config.port, () => {
       console.log('Server running on port:', config.port);
+      startScheduledJobs();
     });
 
     server.on('SIGINT', () => {

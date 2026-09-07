@@ -13,15 +13,20 @@ function readEpisodeLines(): writeEpisodeData[] {
 }
 
 async function loadOneAnimeEpisodes(record: writeEpisodeData) {
-    const animeResult = await AnimeModel.findOneAndUpdate(
-        {anilistId: record.anilistId},
-        {$set: {
-            episodes: record.episodes,
-            episodesCached: true
-        }}
-    )
-
-    if (!animeResult) logger.error(`Anime with id ${record.anilistId} failed to update`);
+    try {
+        const animeResult = await AnimeModel.findOneAndUpdate(
+            { anilistId: record.anilistId },
+            {
+                $set: {
+                    episodes: record.episodes,
+                    episodesCached: true
+                }
+            }
+        )
+        if (!animeResult) logger.error(`Anime with id ${record.anilistId} failed to update`);
+    } catch (err) {
+        logger.error(`Error updating anime with id ${record.anilistId}: ${err}`);
+    }
 }
 
 async function runLoad() {
@@ -32,9 +37,9 @@ async function runLoad() {
 }
 
 connectDB()
-.then(() => runLoad())
-.then(() => process.exit(0))
-.catch((err) => {
-    console.error('Load script failed:', err);
-    process.exit(1);
-})
+    .then(() => runLoad())
+    .then(() => process.exit(0))
+    .catch((err) => {
+        console.error('Load script failed:', err);
+        process.exit(1);
+    })

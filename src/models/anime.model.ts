@@ -195,6 +195,8 @@ export interface Anime {
   isAdult: boolean; //filtering no adult shows 
   trailer?: Trailer; // 
   coverColor?: string; //for UX design //
+  jikanFailCount: number;
+  jikanFlagged: boolean;
 }
 
 const animeSchema = new Schema<Anime>({
@@ -263,10 +265,12 @@ const animeSchema = new Schema<Anime>({
   tags: [tagSchema],
   synonyms: [{ type: String }],
   popularity: { type: Number, required: true, default: 0 },
-favourites: { type: Number, required: true, default: 0 },
+  favourites: { type: Number, required: true, default: 0 },
   isAdult: { type: Boolean, required: true, default: false },
   trailer: trailerSchema,
   coverColor: { type: String },
+  jikanFailCount: { type: Number, default: 0 },
+  jikanFlagged: { type: Boolean, default: false }
 });
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);
