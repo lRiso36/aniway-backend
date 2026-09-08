@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 
 import BaseController from './base.controller';
 import AnimeModel, { Anime } from '../models/anime.model';
-import SearchCacheModel from '../models/search.model';
 import logger from '../logs/logger';
 import {
   searchAnimeHelper,
@@ -26,28 +25,21 @@ class AnimeController extends BaseController<Anime> {
     try {
       const { q: query } = SearchAnimeSchema.parse(req.query);
 
-      //search database for search query and matching results
-      const cached = await SearchCacheModel.findOne({ query }).populate(
-        'animeIds'
-      );
+      const localResults = await AnimeModel.find(
+        { $text: { $search: query } },
+        { score: { $meta: 'textScore' } },
+      ).sort({ score: { $meta: 'textScore' } })
 
-      if (cached) {
-        return res.status(200).json(cached.animeIds);
+      if (localResults.length > 0) {
+        return res.status(200).json(localResults);
       }
 
-      //if not in database, search api
+      // fall back to aniList if local search is empty
       const apiResults = await searchAnimeHelper(query);
 
       //if no results, skip extra stuff and just save + return
       if (apiResults.length === 0) {
-        const emptyCache = await SearchCacheModel.create({
-          query,
-          animeIds: [],
-        });
-
-        return res.status(200).json({
-          emptyCache,
-        });
+        return res.status(200).json([]);
       }
 
       //upsert each anime by anilistId in one round trip
@@ -83,22 +75,12 @@ class AnimeController extends BaseController<Anime> {
         });
       }
 
-      //map _ids for the cache record
-      const animeIds = savedAnimes.map((anime) => anime._id);
-
-      //create entry in cache table
-      await SearchCacheModel.create({
-        query,
-        animeIds,
-      });
-
-      return res.status(200).json({
-        savedAnimes,
-      });
+      return res.status(200).json(savedAnimes);
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
   }
+
 
   async getAnimeDetails(req: Request, res: Response) {
     try {
@@ -210,7 +192,7 @@ class AnimeController extends BaseController<Anime> {
         studio: studioById.get(studio.anilistId)!._id,
         isAnimationStudio: studio.isAnimationStudio,
       }));
- 
+
       const savedAnime = await AnimeModel.findOneAndUpdate(
         { anilistId },
         {

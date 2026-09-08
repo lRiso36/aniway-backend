@@ -273,6 +273,12 @@ const animeSchema = new Schema<Anime>({
   jikanFlagged: { type: Boolean, default: false }
 });
 
+animeSchema.index({
+  titleEnglish: 'text',
+  titleRomaji: 'text',
+  synonyms: 'text',
+});
+
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);
 
 export default AnimeModel;
