@@ -1,3 +1,4 @@
+import logger from "../logs/logger";
 import { SyncState } from "../models/syncState.model";
 import { ANIME_DELTA_QUERY } from "../queries/updateAnimeQuery";
 import { processBatch } from "../scripts/animeSeed/seedAnimeLoad";
@@ -57,6 +58,7 @@ export async function anilistDeltaSync() {
         await SyncState.updateOne({ key: 'anilist-sync' }, { lastSyncedAt: maxUpdatedAt });
     }
 
+    logger.info(`Complete anilistDeltaSync updated ${changedAnimeIds.length} anime`)
     return changedAnimeIds;
 
 }

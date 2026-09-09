@@ -217,6 +217,37 @@ class AnimeController extends BaseController<Anime> {
       this.errorHandler(error as Error, req, res);
     }
   }
+
+  // const sortMap: Record<string, Record<string, 1 | -1>> = {
+  //   POPULARITY_DESC: { popularity: -1 },
+  //   SCORE_DESC: { averageScore: -1 },
+  //   FAVOURITES_DESC: { favourites: -1 },
+  //   TITLE_ROMAJI: { titleRomaji: 1 },
+  // };
+
+  async animeFilter(req: Request, res: Response) {
+    try {
+      const parsed = SearchAnimeSchema.safeParse(req.query);
+      if (!parsed.success) {
+        throw new Error(this.ERROR_MESSAGES.BAD_REQUEST)
+      }
+
+      const { q, genre, year, season, format, status, sort, page, limit } = parsed.data;
+
+      const filter: any = {}
+
+      if (q) filter.$text = { $search: q };
+      if (genre) filter.genre = genre;
+      if (year) filter.seasonYear = Number(year);
+      if (season) filter.season = season;
+      if (format) filter.format = format;
+      if (status) filter.status = status;
+
+
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+  }
 }
 
 const animeController = new AnimeController();
