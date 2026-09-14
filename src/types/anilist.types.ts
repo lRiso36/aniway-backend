@@ -95,6 +95,7 @@ export interface AniListSearchResult {
   malId?: number;
   titleEnglish?: string;
   titleRomaji: string;
+  displayTitle: string;
   coverLarge: string;
   coverExtraLarge?: string;
   coverColor?: string;

@@ -165,6 +165,7 @@ export interface Anime {
   anilistId: number; // 
   titleEnglish?: string; // 
   titleRomaji: string; // 
+  displayTitle: string;
   coverLarge: string; // 
   coverExtraLarge?: string; // 
   bannerImage?: string; // 
@@ -203,6 +204,7 @@ const animeSchema = new Schema<Anime>({
   anilistId: { type: Number, required: true, unique: true },
   titleEnglish: { type: String },
   titleRomaji: { type: String, required: true },
+  displayTitle: { type: String, required: true },
   coverLarge: { type: String, required: true },
   coverExtraLarge: { type: String },
   bannerImage: { type: String },
@@ -278,6 +280,19 @@ animeSchema.index({
   titleRomaji: 'text',
   synonyms: 'text',
 });
+
+animeSchema.index({ genres: 1 });
+animeSchema.index({ 'tags.name': 1 });
+animeSchema.index({ seasonYear: 1 });
+animeSchema.index({ season: 1 });
+animeSchema.index({ format: 1 });
+animeSchema.index({ status: 1 });
+
+animeSchema.index({ popularity: -1 });
+animeSchema.index({ averageScore: -1 });
+animeSchema.index({ favourites: -1 });
+animeSchema.index({ displayTitle: 1 });
+
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);
 

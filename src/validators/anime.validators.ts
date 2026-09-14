@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { tagEnum } from './enums/tag.enum';
 
 const genreEnum = z.enum([
   'Action',
@@ -30,13 +31,22 @@ const statusEnum = z.enum([
 ]);
 
 const sortEnum = z.enum([
-  "POPULARITY_DESC", "TRENDING_DESC", "SCORE_DESC",
+  "POPULARITY_DESC", 
+  // "TRENDING_DESC", 
+  "SCORE_DESC",
   "FAVOURITES_DESC", "TITLE",
 ]);
 
 export const SearchAnimeSchema = z.object({
-  q: z.string().trim().toLowerCase().min(1, 'Search query is required'),
-  genre: genreEnum.optional(),
+  q: z.string().trim().toLowerCase().min(1, 'Search query is required').optional(),
+  genre: z
+    .union([genreEnum, z.array(genreEnum)])
+    .optional()
+    .transform((val) => val === undefined ? undefined : Array.isArray(val) ? val : [val]),
+  tag: z
+    .union([tagEnum, z.array(tagEnum)])
+    .optional()
+    .transform((val) => val === undefined ? undefined : Array.isArray(val) ? val : [val]),
   year: z.coerce.number().int().min(1940).max(new Date().getFullYear() + 1).optional(),
   season: seasonEnum.optional(),
   format: formatEnum.optional(),
@@ -49,3 +59,4 @@ export const SearchAnimeSchema = z.object({
 export const GetAnimeByIdSchema = z.object({
   anilistId: z.number('Anilist ID is required'),
 });
+

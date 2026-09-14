@@ -2,9 +2,7 @@ import { Request, Response } from 'express';
 
 import BaseController from './base.controller';
 import AnimeModel, { Anime } from '../models/anime.model';
-import logger from '../logs/logger';
 import {
-  searchAnimeHelper,
   getAnimeDetailsHelper,
 } from '../services/anime.service';
 import CharacterModel from '../models/character.model';
@@ -21,65 +19,65 @@ class AnimeController extends BaseController<Anime> {
     super(AnimeModel);
   }
 
-  async searchAnime(req: Request, res: Response) {
-    try {
-      const { q: query } = SearchAnimeSchema.parse(req.query);
+  // async searchAnime(req: Request, res: Response) {
+  //   try {
+  //     const { q: query } = SearchAnimeSchema.parse(req.query);
 
-      const localResults = await AnimeModel.find(
-        { $text: { $search: query } },
-        { score: { $meta: 'textScore' } },
-      ).sort({ score: { $meta: 'textScore' } })
+  //     const localResults = await AnimeModel.find(
+  //       { $text: { $search: query } },
+  //       { score: { $meta: 'textScore' } },
+  //     ).sort({ score: { $meta: 'textScore' } })
 
-      if (localResults.length > 0) {
-        return res.status(200).json(localResults);
-      }
+  //     if (localResults.length > 0) {
+  //       return res.status(200).json(localResults);
+  //     }
 
-      // fall back to aniList if local search is empty
-      const apiResults = await searchAnimeHelper(query);
+  //     // fall back to aniList if local search is empty
+  //     const apiResults = await searchAnimeHelper(query);
 
-      //if no results, skip extra stuff and just save + return
-      if (apiResults.length === 0) {
-        return res.status(200).json([]);
-      }
+  //     //if no results, skip extra stuff and just save + return
+  //     if (apiResults.length === 0) {
+  //       return res.status(200).json([]);
+  //     }
 
-      //upsert each anime by anilistId in one round trip
-      //ordered = false means one bad doc wont block the rest of the batch
-      const bulkMap = apiResults.map((anime) => ({
-        updateOne: {
-          filter: { anilistId: anime.anilistId },
-          update: { $set: anime },
-          upsert: true,
-        },
-      }));
+  //     //upsert each anime by anilistId in one round trip
+  //     //ordered = false means one bad doc wont block the rest of the batch
+  //     const bulkMap = apiResults.map((anime) => ({
+  //       updateOne: {
+  //         filter: { anilistId: anime.anilistId },
+  //         update: { $set: anime },
+  //         upsert: true,
+  //       },
+  //     }));
 
-      await AnimeModel.bulkWrite(bulkMap, { ordered: false });
+  //     await AnimeModel.bulkWrite(bulkMap, { ordered: false });
 
-      //fetch them back since bulkwrite doesnt return full docs
-      const savedAnimes = await AnimeModel.find({
-        anilistId: { $in: apiResults.map((a) => a.anilistId) },
-      });
+  //     //fetch them back since bulkwrite doesnt return full docs
+  //     const savedAnimes = await AnimeModel.find({
+  //       anilistId: { $in: apiResults.map((a) => a.anilistId) },
+  //     });
 
-      //on bulk write failure
-      if (savedAnimes.length === 0)
-        throw new Error(this.ERROR_MESSAGES.SEARCH_FAILED);
+  //     //on bulk write failure
+  //     if (savedAnimes.length === 0)
+  //       throw new Error(this.ERROR_MESSAGES.SEARCH_FAILED);
 
-      if (savedAnimes.length < apiResults.length) {
-        const savedIds = new Set(savedAnimes.map((a) => a.anilistId));
-        const failedIds = apiResults
-          .filter((a) => !savedIds.has(a.anilistId))
-          .map((a) => a.anilistId);
+  //     if (savedAnimes.length < apiResults.length) {
+  //       const savedIds = new Set(savedAnimes.map((a) => a.anilistId));
+  //       const failedIds = apiResults
+  //         .filter((a) => !savedIds.has(a.anilistId))
+  //         .map((a) => a.anilistId);
 
-        logger.error('Failed to save some anime during search:', {
-          query,
-          failedIds,
-        });
-      }
+  //       logger.error('Failed to save some anime during search:', {
+  //         query,
+  //         failedIds,
+  //       });
+  //     }
 
-      return res.status(200).json(savedAnimes);
-    } catch (error) {
-      this.errorHandler(error as Error, req, res);
-    }
-  }
+  //     return res.status(200).json(savedAnimes);
+  //   } catch (error) {
+  //     this.errorHandler(error as Error, req, res);
+  //   }
+  // }
 
 
   async getAnimeDetails(req: Request, res: Response) {
@@ -218,13 +216,6 @@ class AnimeController extends BaseController<Anime> {
     }
   }
 
-  // const sortMap: Record<string, Record<string, 1 | -1>> = {
-  //   POPULARITY_DESC: { popularity: -1 },
-  //   SCORE_DESC: { averageScore: -1 },
-  //   FAVOURITES_DESC: { favourites: -1 },
-  //   TITLE_ROMAJI: { titleRomaji: 1 },
-  // };
-
   async animeFilter(req: Request, res: Response) {
     try {
       const parsed = SearchAnimeSchema.safeParse(req.query);
@@ -232,17 +223,52 @@ class AnimeController extends BaseController<Anime> {
         throw new Error(this.ERROR_MESSAGES.BAD_REQUEST)
       }
 
-      const { q, genre, year, season, format, status, sort, page, limit } = parsed.data;
+      const { q, genre, tag, year, season, format, status, sort, page, limit } = parsed.data;
 
       const filter: any = {}
 
       if (q) filter.$text = { $search: q };
-      if (genre) filter.genre = genre;
+      if (tag) filter['tags.name'] = { $in: tag };
+      if (genre) filter.genres = { $in: genre };
       if (year) filter.seasonYear = Number(year);
       if (season) filter.season = season;
       if (format) filter.format = format;
       if (status) filter.status = status;
 
+      const sortMap: Record<string, Record<string, 1 | -1>> = {
+        POPULARITY_DESC: { popularity: -1 },
+        SCORE_DESC: { averageScore: -1 },
+        FAVOURITES_DESC: { favourites: -1 },
+        TITLE: { displayTitle: 1 },
+      };
+
+      let sortObj;
+      if (sort) {
+        sortObj = sortMap[sort]
+      } else if (q) {
+        sortObj = { score: { $meta: 'textScore' } }
+      } else {
+        sortObj = sortMap['POPULARITY_DESC']
+      }
+
+      const projection = q ? { score: { $meta: 'textScore' } } : {};
+
+      const skip = (page - 1) * limit;
+
+      const [results, totalCount] = await Promise.all([
+        AnimeModel.find(filter, projection)
+          .sort(sortObj)
+          .skip(skip)
+          .limit(limit),
+        AnimeModel.countDocuments(filter)
+      ])
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+
+      return res.status(200).json({
+        results, totalCount, totalPages
+      })
 
     } catch (error) {
       this.errorHandler(error as Error, req, res);
