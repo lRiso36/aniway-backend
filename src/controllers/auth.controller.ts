@@ -245,8 +245,6 @@ class AuthController extends BaseController<AuthToken> {
       });
 
       res.redirect(`${config.clientUrl}/login?verified=true`);
-
-      res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }

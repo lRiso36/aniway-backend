@@ -25,7 +25,7 @@ Content-Type: application/json
 
 ### TEST 1b — Refresh (normal rotation)
 POST {{baseUrl}}/refresh
-Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTcxZjUzOThlOTM5YjVkOGNjNDVmNzgiLCJpYXQiOjE3ODU4NTMyOTQsImV4cCI6MTc4NjQ1ODA5NH0.K0fLHL1t4obvYZ-HVG-iyANO2veXcSueoNNewEuWOic
+Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWE4OGUxODlkNGYwNGVhYzg4ZDZmYWYiLCJpYXQiOjE3ODk0MzEzMjIsImV4cCI6MTc5MDAzNjEyMn0.fUjbIHr-ldro2oJEOOWfit-lxnLE06d27mBTBGP4_PA; Max-Age=604800; Path=/; Expires=Tue, 22 Sep 2026 00:15:22 GMT; HttpOnly; SameSite=Lax,accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWE4OGUxODlkNGYwNGVhYzg4ZDZmYWYiLCJpYXQiOjE3ODk0MzEzMjIsImV4cCI6MTc4OTQ2MDEyMn0.CHtGxP043nzO-xZ8AIWPFPHIrHL2RGW_vOAYguUCjhQ
 ###TEST 2 — Reuse detection
 ### Manual, deliberate reuse of an already-rotated token.
 ### Steps:
@@ -38,7 +38,7 @@ Cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTcxZj
 ###   5. Check Mongo: every AuthToken doc sharing that familyId
 ###      should now show revoked: true, not just the reused one.
 
-@oldToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTcxZjUzOThlOTM5YjVkOGNjNDVmNzgiLCJpYXQiOjE3ODU4NTMyOTQsImV4cCI6MTc4NjQ1ODA5NH0.K0fLHL1t4obvYZ-HVG-iyANO2veXcSueoNNewEuWOic
+@oldToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWE4OGUxODlkNGYwNGVhYzg4ZDZmYWYiLCJpYXQiOjE3ODk0MzEzMjIsImV4cCI6MTc5MDAzNjEyMn0.fUjbIHr-ldro2oJEOOWfit-lxnLE06d27mBTBGP4_PA; Max-Age=604800; Path=/; Expires=Tue, 22 Sep 2026 00:15:22 GMT; HttpOnly; SameSite=Lax,accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YWE4OGUxODlkNGYwNGVhYzg4ZDZmYWYiLCJpYXQiOjE3ODk0MzEzMjIsImV4cCI6MTc4OTQ2MDEyMn0.CHtGxP043nzO-xZ8AIWPFPHIrHL2RGW_vOAYguUCjhQ
 
 ### Refresh once (rotates @oldToken, so it's now revoked)
 POST {{baseUrl}}/refresh

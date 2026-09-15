@@ -29,7 +29,7 @@ const errorHandler = (error: Error, req: Request, res: Response) => {
     case ERROR_MESSAGES.USERNAME_TAKEN:
       return res.status(409).json({ message: ERROR_MESSAGES.USERNAME_TAKEN });
     case ERROR_MESSAGES.INVALID_TOKEN:
-      return res.status(400).json({ message: ERROR_MESSAGES.USERNAME_TAKEN });
+      return res.status(400).json({ message: ERROR_MESSAGES.INVALID_TOKEN });
     case ERROR_MESSAGES.SEARCH_FAILED:
       return res.status(500).json({ message: ERROR_MESSAGES.SEARCH_FAILED });
     default:
