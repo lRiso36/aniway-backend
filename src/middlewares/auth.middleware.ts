@@ -9,6 +9,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const token =
       req.cookies?.accessToken ?? req.headers?.authorization?.split(' ')[1];
 
+    if (!token) throw new Error(ERROR_MESSAGES.UNAUTHORIZED);
+
     const decoded = jwtUtil.verifyAccessToken(token);
 
     if (!decoded) throw new Error(ERROR_MESSAGES.EXPIRED_TOKEN);

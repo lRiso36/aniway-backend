@@ -16,27 +16,20 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
   }
 
   async logAnime(req: Request, res: Response) {
-    const {
-      animeId,
-      status,
-      currentEpisode,
-      repeatCount,
-      score,
-      startDate,
-      finishDate,
-      notes,
-    } = LogAnimeSchema.parse(req.body);
-
-    // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
-    const userId = req.body.userId;
-
-    if (!userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-
-    //END OF STAND IN
-
     try {
+      const {
+        animeId,
+        status,
+        currentEpisode,
+        repeatCount,
+        score,
+        startDate,
+        finishDate,
+        notes,
+      } = LogAnimeSchema.parse(req.body);
+
+      const userId = req.meta?.user?._id;
+
       const savedEntry = await UserAnimeEntryModel.findOneAndUpdate(
         { user: userId, anime: animeId },
         {
@@ -63,18 +56,11 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
   // toggle is favorite
   async toggleIsFavorite(req: Request, res: Response) {
-    const { animeId } = ToggleFavoriteSchema.parse(req.body);
-
-    // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
-    const userId = req.body.userId;
-
-    if (!userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-
-    //END OF STAND IN
-
     try {
+      const { animeId } = ToggleFavoriteSchema.parse(req.body);
+
+      const userId = req.meta?.user?._id;
+
       const existing = await UserAnimeEntryModel.findOne({
         user: userId,
         anime: animeId,
@@ -100,18 +86,11 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
   //remove anime from entry
   async removeAnimeEntry(req: Request, res: Response) {
-    const { animeId } = RemoveAnimeEntrySchema.parse(req.params);
-
-    // STAND IN UNTIL WE HAVE AUTH MIDDLEWARE
-    const userId = req.body.userId;
-
-    if (!userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-
-    //END OF STAND IN
-
     try {
+      const { animeId } = RemoveAnimeEntrySchema.parse(req.params);
+
+      const userId = req.meta?.user?._id;
+
       const result = await UserAnimeEntryModel.deleteOne({
         user: userId,
         anime: animeId,
