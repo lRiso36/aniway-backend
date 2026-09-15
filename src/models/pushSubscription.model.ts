@@ -19,7 +19,7 @@ const pushSubscriptionSchema = new mongoose.Schema<PushSubscription>(
     endpoint: {
       type: String,
       required: true,
-      unqiue: true,
+      unique: true,
     },
     keys: {
       p256dh: {
