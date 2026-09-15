@@ -11,6 +11,7 @@ enum ERROR_MESSAGES {
   USERNAME_TAKEN = 'An account with that username already exists',
   INVALID_TOKEN = 'Invalid or expired verification token',
   SEARCH_FAILED = 'Something went wrong with your search. Please try again.',
+  FORBIDDEN = 'You do not have permission to perform this action.',
 }
 
 export default ERROR_MESSAGES;

@@ -24,6 +24,8 @@ const errorHandler = (error: Error, req: Request, res: Response) => {
       return res.status(401).json({ message: ERROR_MESSAGES.UNAUTHORIZED });
     case ERROR_MESSAGES.BAD_REQUEST:
       return res.status(400).json({ message: ERROR_MESSAGES.BAD_REQUEST });
+    case ERROR_MESSAGES.FORBIDDEN:
+      return res.status(403).json({ message: ERROR_MESSAGES.FORBIDDEN });
     case ERROR_MESSAGES.EMAIL_TAKEN:
       return res.status(409).json({ message: ERROR_MESSAGES.EMAIL_TAKEN });
     case ERROR_MESSAGES.USERNAME_TAKEN:

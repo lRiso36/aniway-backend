@@ -6,6 +6,7 @@ declare global {
       meta?: {
         user?: {
           _id: string;
+          role: 'admin' | 'user';
         };
       };
     }

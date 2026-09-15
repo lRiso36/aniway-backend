@@ -10,6 +10,7 @@ export interface User {
   bio: string;
   isPrivate: boolean;
   isVerified: boolean;
+  role: 'admin' | 'user';
 }
 //raw field definition
 const userSchema = new mongoose.Schema<User>(
@@ -48,6 +49,12 @@ const userSchema = new mongoose.Schema<User>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    role: {
+      type: String,
+      enum: ['admin', 'user'],
+      required: true,
+      default: 'user',
     },
   },
   { timestamps: true }
