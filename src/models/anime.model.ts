@@ -162,42 +162,43 @@ const trailerSchema = new Schema<Trailer>(
 );
 
 export interface Anime {
-  anilistId: number; // 
-  titleEnglish?: string; // 
-  titleRomaji: string; // 
+  anilistId: number; //
+  titleEnglish?: string; //
+  titleRomaji: string; //
   displayTitle: string;
-  coverLarge: string; // 
-  coverExtraLarge?: string; // 
-  bannerImage?: string; // 
-  episodeCount?: number; // 
-  description?: string; // 
+  coverLarge: string; //
+  coverExtraLarge?: string; //
+  bannerImage?: string; //
+  episodeCount?: number; //
+  description?: string; //
   cachedAt: Date;
-  malId?: number; // 
+  malId?: number; //
   detailsCached: boolean;
-  averageScore?: number; // 
-  source?: MediaSource; // 
-  season?: Season; // 
-  seasonYear?: number; // 
-  startDate?: FuzzyDate; // 
-  endDate?: FuzzyDate; // 
+  averageScore?: number; //
+  source?: MediaSource; //
+  season?: Season; //
+  seasonYear?: number; //
+  startDate?: FuzzyDate; //
+  endDate?: FuzzyDate; //
   episodes?: Episode[];
   episodesCached: boolean;
-  studios: StudioLink[]; // 
-  characters: CharacterLink[]; // 
-  genres: string[]; // 
-  externalLinks: ExternalLink[]; // 
-  format?: MediaFormat; // 
-  status?: MediaStatus; // 
-  duration?: number; // 
-  tags?: Tag[]; // 
-  synonyms: string[]; // alternate titles for search 
-  popularity: number; //how many have this in their list 
-  favourites: number; //how many favorited this 
-  isAdult: boolean; //filtering no adult shows 
-  trailer?: Trailer; // 
+  studios: StudioLink[]; //
+  characters: CharacterLink[]; //
+  genres: string[]; //
+  externalLinks: ExternalLink[]; //
+  format?: MediaFormat; //
+  status?: MediaStatus; //
+  duration?: number; //
+  tags?: Tag[]; //
+  synonyms: string[]; // alternate titles for search
+  popularity: number; //how many have this in their list
+  favourites: number; //how many favorited this
+  isAdult: boolean; //filtering no adult shows
+  trailer?: Trailer; //
   coverColor?: string; //for UX design //
   jikanFailCount: number;
   jikanFlagged: boolean;
+  embedding?: number[]; // for recommendation
 }
 
 const animeSchema = new Schema<Anime>({
@@ -272,7 +273,8 @@ const animeSchema = new Schema<Anime>({
   trailer: trailerSchema,
   coverColor: { type: String },
   jikanFailCount: { type: Number, default: 0 },
-  jikanFlagged: { type: Boolean, default: false }
+  jikanFlagged: { type: Boolean, default: false },
+  embedding: { type: [Number] },
 });
 
 animeSchema.index({
@@ -292,7 +294,6 @@ animeSchema.index({ popularity: -1 });
 animeSchema.index({ averageScore: -1 });
 animeSchema.index({ favourites: -1 });
 animeSchema.index({ displayTitle: 1 });
-
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);
 
