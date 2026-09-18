@@ -51,8 +51,23 @@ export async function getReccomendedAnimes(userId: string, limit: number = 20) {
 
     const topRecs = sorted.slice(0, limit);
 
-    console.log(topRecs);
+    // console.log(topRecs);
 
+    const scoreMap = new Map(topRecs.map((r) => [r.animeId, r.score]));
+
+    const topRecIds = [...scoreMap.keys()];
+
+    const animeDocs = await AnimeModel.find({
+      _id: { $in: topRecIds },
+    }).select(
+      '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
+    );
+
+    animeDocs.map((doc) => [doc._id.toString(), doc]);
+
+    // for (const recId of topRecIds) {
+    //   // TODO: MATCH ID AND SORT
+    // }
     //TODO: RETURN FULL ANIME
   }
 
