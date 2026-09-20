@@ -193,104 +193,101 @@ export const getAnimeDetailsHelper = async (
       throw new Error('Invalid Anilist response');
     }
 
-    return formatAnimeDetails(data.data.Media)
+    return formatAnimeDetails(data.data.Media);
   } catch (error) {
     logger.error('Error in anime details helper:', error);
     throw error;
   }
 };
 
-export const formatAnimeDetails = (
-  anime: AniListMediaDetailResponse
-) => {
+export const formatAnimeDetails = (anime: AniListMediaDetailResponse) => {
   const characters: AniListCharacterResult[] = anime.characters.edges.map(
-      (edge) => ({
-        anilistId: edge.node.id,
-        name: edge.node.name.full,
-        image: edge.node.image.large ?? undefined,
-        role: edge.role,
-        voiceActors: edge.voiceActors
-          .filter(
-            (actor) =>
-              actor.language === 'JAPANESE' || actor.language === 'ENGLISH'
-          )
-          .map((actor) => ({
-            anilistId: actor.id,
-            name: actor.name.full,
-            image: actor.image.large ?? undefined,
-            language: actor.language as 'ENGLISH' | 'JAPANESE',
-          })),
-      })
-    );
+    (edge) => ({
+      anilistId: edge.node.id,
+      name: edge.node.name.full,
+      image: edge.node.image.large ?? undefined,
+      role: edge.role,
+      voiceActors: edge.voiceActors
+        .filter(
+          (actor) =>
+            actor.language === 'JAPANESE' || actor.language === 'ENGLISH'
+        )
+        .map((actor) => ({
+          anilistId: actor.id,
+          name: actor.name.full,
+          image: actor.image.large ?? undefined,
+          language: actor.language as 'ENGLISH' | 'JAPANESE',
+        })),
+    })
+  );
 
-    const studios: AniListStudioResult[] = anime.studios.edges.map(
-      (stuido) => ({
-        isMain: stuido.isMain,
-        anilistId: stuido.node.id,
-        name: stuido.node.name,
-        isAnimationStudio: stuido.node.isAnimationStudio,
-      })
-    );
+  const studios: AniListStudioResult[] = anime.studios.edges.map((stuido) => ({
+    isMain: stuido.isMain,
+    anilistId: stuido.node.id,
+    name: stuido.node.name,
+    isAnimationStudio: stuido.node.isAnimationStudio,
+  }));
 
-    const result: AniListDetailResult = {
-      anilistId: anime.id,
-      malId: anime.idMal ?? undefined,
-      titleEnglish: anime.title.english ?? undefined,
-      titleRomaji: anime.title.romaji,
-      displayTitle: anime.title.english ?? anime.title.romaji,
-      coverLarge: anime.coverImage.large,
-      coverExtraLarge: anime.coverImage.extraLarge ?? undefined,
-      bannerImage: anime.bannerImage ?? undefined,
-      episodeCount: anime.episodes ?? undefined,
-      averageScore: anime.averageScore ?? undefined,
-      genres: anime.genres ?? [],
-      description: anime.description ?? undefined,
-      startDate: anime.startDate
-        ? {
-            year: anime.startDate.year ?? undefined,
-            month: anime.startDate.month ?? undefined,
-            day: anime.startDate.day ?? undefined,
-          }
-        : undefined,
-      endDate: anime.endDate
-        ? {
-            year: anime.endDate.year ?? undefined,
-            month: anime.endDate.month ?? undefined,
-            day: anime.endDate.day ?? undefined,
-          }
-        : undefined,
-      format: anime.format ?? undefined,
-      status: anime.status ?? undefined,
-      duration: anime.duration ?? undefined,
-      source: anime.source ?? undefined,
-      season: anime.season ?? undefined,
-      seasonYear: anime.seasonYear ?? undefined,
-      characters,
-      studios,
-      externalLinks: anime.externalLinks.map((link) => ({
-        url: link.url,
-        site: link.site,
-        icon: link.icon ?? undefined,
-        color: link.color ?? undefined,
-      })),
-      tags: anime.tags?.map((tag) => ({
+  const result: AniListDetailResult = {
+    anilistId: anime.id,
+    malId: anime.idMal ?? undefined,
+    titleEnglish: anime.title.english ?? undefined,
+    titleRomaji: anime.title.romaji,
+    displayTitle: anime.title.english ?? anime.title.romaji,
+    coverLarge: anime.coverImage.large,
+    coverExtraLarge: anime.coverImage.extraLarge ?? undefined,
+    bannerImage: anime.bannerImage ?? undefined,
+    episodeCount: anime.episodes ?? undefined,
+    averageScore: anime.averageScore ?? undefined,
+    genres: anime.genres ?? [],
+    description: anime.description ?? undefined,
+    startDate: anime.startDate
+      ? {
+          year: anime.startDate.year ?? undefined,
+          month: anime.startDate.month ?? undefined,
+          day: anime.startDate.day ?? undefined,
+        }
+      : undefined,
+    endDate: anime.endDate
+      ? {
+          year: anime.endDate.year ?? undefined,
+          month: anime.endDate.month ?? undefined,
+          day: anime.endDate.day ?? undefined,
+        }
+      : undefined,
+    format: anime.format ?? undefined,
+    status: anime.status ?? undefined,
+    duration: anime.duration ?? undefined,
+    source: anime.source ?? undefined,
+    season: anime.season ?? undefined,
+    seasonYear: anime.seasonYear ?? undefined,
+    characters,
+    studios,
+    externalLinks: anime.externalLinks.map((link) => ({
+      url: link.url,
+      site: link.site,
+      icon: link.icon ?? undefined,
+      color: link.color ?? undefined,
+    })),
+    tags:
+      anime.tags?.map((tag) => ({
         name: tag.name,
         rank: tag.rank,
-        isSpoiler: tag.isMediaSpoiler
+        isSpoiler: tag.isMediaSpoiler,
       })) ?? [],
-      synonyms: anime.synonyms ?? [],
-      popularity: anime.popularity ?? 0,
-      favourites: anime.favourites ?? 0,
-      isAdult: anime.isAdult ?? false,
-      trailer: anime.trailer ? 
-      {
-        id: anime.trailer.id,
-        site:anime.trailer.site,
-        thumbnail: anime.trailer.thumbnail ?? undefined
-      } 
+    synonyms: anime.synonyms ?? [],
+    popularity: anime.popularity ?? 0,
+    favourites: anime.favourites ?? 0,
+    isAdult: anime.isAdult ?? false,
+    trailer: anime.trailer
+      ? {
+          id: anime.trailer.id,
+          site: anime.trailer.site,
+          thumbnail: anime.trailer.thumbnail ?? undefined,
+        }
       : undefined,
-      coverColor: anime.coverImage.color ?? undefined,
-    };
+    coverColor: anime.coverImage.color ?? undefined,
+  };
 
-    return result;
-}
+  return result;
+};

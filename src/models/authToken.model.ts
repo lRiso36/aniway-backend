@@ -7,18 +7,20 @@ export interface AuthToken {
   updatedAt: Date;
 }
 
-const authTokenSchema = new Schema<AuthToken>({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const authTokenSchema = new Schema<AuthToken>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    token: {
+      type: String,
+      required: true,
+    },
   },
-  token: {
-    type: String,
-    required: true,
-  },
-}, { timestamps: true });
-
+  { timestamps: true }
+);
 
 const AuthTokenModel = mongoose.model<AuthToken>('AuthToken', authTokenSchema);
 

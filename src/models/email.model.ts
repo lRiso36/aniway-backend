@@ -1,4 +1,4 @@
-import { model, Schema, Document } from "mongoose";
+import { model, Schema, Document } from 'mongoose';
 
 export interface IEmail extends Document {
   to: string;
@@ -18,6 +18,6 @@ const emailSchema = new Schema<IEmail>({
 
 emailSchema.index({ sentAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 3 }); // Emails will be removed after 7 days
 
-const EmailModel = model<IEmail>("Email", emailSchema);
+const EmailModel = model<IEmail>('Email', emailSchema);
 
 export default EmailModel;

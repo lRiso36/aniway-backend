@@ -2,13 +2,12 @@ import { Request, Response } from 'express';
 import { Model } from 'mongoose';
 import _ from 'lodash';
 
-
 import errorHandler from '../utils/error-handler.util';
-import ERROR_MESSAGES from '../constants/error-messages'
+import ERROR_MESSAGES from '../constants/error-messages';
 import logger from '../logs/logger';
 import * as jwtUtil from '../utils/jwt.util';
 import appBroker from '../app.broker';
-import config from '../config/config'
+import config from '../config/config';
 import AppRegistry from '../app.registry';
 
 class BaseController<T> {
@@ -20,7 +19,7 @@ class BaseController<T> {
   ERROR_MESSAGES: typeof ERROR_MESSAGES;
   errorHandler: typeof errorHandler;
   jwtUtil: typeof jwtUtil;
-  broker: typeof appBroker
+  broker: typeof appBroker;
   listeners?(): void;
   config: typeof config;
   registry: typeof AppRegistry;
@@ -47,8 +46,7 @@ class BaseController<T> {
 
       const newDocument = await document.save();
 
-      if(!newDocument) throw new Error(ERROR_MESSAGES.SERVER_ERROR);
-      
+      if (!newDocument) throw new Error(ERROR_MESSAGES.SERVER_ERROR);
 
       // if (!newDocument) {
       //   throw new Error('Failed to create document');
@@ -59,7 +57,7 @@ class BaseController<T> {
         data: newDocument,
       });
     } catch (error) {
-      this.errorHandler(error as Error, req, res)
+      this.errorHandler(error as Error, req, res);
     }
   }
 
@@ -82,23 +80,21 @@ class BaseController<T> {
 
   async getById(req: Request, res: Response) {
     try {
-
       const found = await this.model.findById(req.params.id);
-  
-  
-      if (!found) throw new Error(ERROR_MESSAGES.NOT_FOUND)
+
+      if (!found) throw new Error(ERROR_MESSAGES.NOT_FOUND);
       // if (!found) {
       //   res.status(404).json({
       //     message: 'Document not found',
       //   });
       // }
-  
+
       res.status(200).json({
         message: 'Document found successfully',
         data: found,
       });
     } catch (error) {
-      this.errorHandler(error as Error, req, res)
+      this.errorHandler(error as Error, req, res);
     }
   }
 

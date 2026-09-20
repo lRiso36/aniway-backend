@@ -3,7 +3,14 @@ import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import { AnimeCardData } from '../types/anilist.types';
 import { UserAnimeEntryWithEmbedding } from '../types/embedAnime.types';
 
-export async function getRecommendedAnimes(userId: string, limit: number = 20) {
+export async function getRecommendedAnimes(
+  userId: string,
+  limit: number = 20
+): Promise<
+  (AnimeCardData & {
+    score: number | null;
+  })[]
+> {
   const userAnime = (await UserAnimeEntryModel.find({
     user: userId,
     status: { $in: ['completed', 'watching', 'rewatching', 'paused'] },
@@ -36,7 +43,7 @@ export async function getRecommendedAnimes(userId: string, limit: number = 20) {
     //average out vector
     const userVector = weightedSum.map((value) => value / totalWeight);
 
-    const userAnimeIds = userAnime.map((entry) => entry.anime._id);
+    const userAnimeIds = filteredAnime.map((entry) => entry.anime._id);
 
     const allAnime = await AnimeModel.find({
       _id: { $nin: userAnimeIds },
@@ -88,9 +95,24 @@ export async function getRecommendedAnimes(userId: string, limit: number = 20) {
     }
 
     return animeResults;
-  }
+  } else {
+    const animeDocs = await AnimeModel.find()
+      .select(
+        '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
+      )
+      .lean()
+      .sort({ popularity: -1, favourites: -1 })
+      .limit(limit);
 
-  // TODO: UNHAPPY PATH POPULAR RECOMMEND
+    const animeResults: (AnimeCardData & { score: number | null })[] =
+      animeDocs.map((anime) => ({
+        ...anime,
+        _id: anime._id.toString(),
+        score: null,
+      }));
+
+    return animeResults;
+  }
 }
 
 function dotProduct(vectorA: number[], vectorB: number[]): number {
@@ -109,7 +131,7 @@ function magnitude(vector: number[]): number {
 }
 
 function cosineSimilarity(vectorA: number[], vectorB: number[]): number {
-  const cosineSimilarity =
-    dotProduct(vectorA, vectorB) / (magnitude(vectorA) * magnitude(vectorB));
-  return cosineSimilarity;
+  const denom = magnitude(vectorA) * magnitude(vectorB);
+  if (denom === 0) return 0;
+  return dotProduct(vectorA, vectorB) / denom;
 }
