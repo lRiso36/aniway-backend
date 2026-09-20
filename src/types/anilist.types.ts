@@ -25,11 +25,13 @@ export interface AniListMediaResponse {
   popularity: number;
   favourites: number;
   isAdult: boolean;
-  tags: {
-    name: string;
-    rank: number;
-    isMediaSpoiler: boolean;
-  }[] | null;
+  tags:
+    | {
+        name: string;
+        rank: number;
+        isMediaSpoiler: boolean;
+      }[]
+    | null;
   format: MediaFormat | null;
   status: MediaStatus | null;
   synonyms: string[];
@@ -83,10 +85,10 @@ export interface AniListMediaDetailResponse extends AniListMediaResponse {
     color: string | null;
   }[];
   trailer: {
-  id: string;
-  site: string;
-  thumbnail: string | null;
-} | null;
+    id: string;
+    site: string;
+    thumbnail: string | null;
+  } | null;
 }
 
 //transformed shapes to match Mongo schema
@@ -111,6 +113,24 @@ export interface AniListSearchResult {
   tags?: AniListTagResult[];
   synonyms: string[];
 }
+
+export type AnimeCardData = {
+  _id: string;
+  anilistId: number;
+  malId?: number;
+  titleEnglish?: string;
+  titleRomaji: string;
+  displayTitle?: string;
+  coverLarge: string;
+  coverExtraLarge?: string;
+  bannerImage?: string;
+  episodeCount?: number;
+  averageScore?: number;
+  genres: string[];
+  description?: string;
+  detailsCached: boolean;
+  startDate?: { year?: number; month?: number; day?: number };
+};
 
 export interface AniListTagResult {
   name: string;

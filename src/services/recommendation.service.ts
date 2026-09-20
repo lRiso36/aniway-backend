@@ -1,8 +1,9 @@
 import AnimeModel from '../models/anime.model';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
+import { AnimeCardData } from '../types/anilist.types';
 import { UserAnimeEntryWithEmbedding } from '../types/embedAnime.types';
 
-export async function getReccomendedAnimes(userId: string, limit: number = 20) {
+export async function getRecommendedAnimes(userId: string, limit: number = 20) {
   const userAnime = (await UserAnimeEntryModel.find({
     user: userId,
     status: { $in: ['completed', 'watching', 'rewatching', 'paused'] },
@@ -42,33 +43,51 @@ export async function getReccomendedAnimes(userId: string, limit: number = 20) {
       embedding: { $exists: true },
     }).select('embedding');
 
-    const scored = allAnime.map((anime) => ({
-      animeId: anime.id,
-      score: cosineSimilarity(anime.embedding!, userVector),
-    }));
+    const scored = allAnime
+      .filter((anime) => anime.embedding!.length === userVector.length)
+      .map((anime) => ({
+        animeId: anime.id.toString(),
+        score: cosineSimilarity(anime.embedding!, userVector),
+      }));
 
     const sorted = scored.sort((a, b) => b.score - a.score);
 
+    // sorted top score matches
     const topRecs = sorted.slice(0, limit);
 
-    // console.log(topRecs);
-
+    //map for faster lookup
     const scoreMap = new Map(topRecs.map((r) => [r.animeId, r.score]));
 
+    // sorted top anime ids
     const topRecIds = [...scoreMap.keys()];
 
     const animeDocs = await AnimeModel.find({
       _id: { $in: topRecIds },
-    }).select(
-      '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
-    );
+    })
+      .select(
+        '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
+      )
+      .lean();
 
-    animeDocs.map((doc) => [doc._id.toString(), doc]);
+    //map all ids and docs for shoter lookup
+    const docMap = new Map(animeDocs.map((doc) => [doc._id.toString(), doc]));
 
-    // for (const recId of topRecIds) {
-    //   // TODO: MATCH ID AND SORT
-    // }
-    //TODO: RETURN FULL ANIME
+    const animeResults: (AnimeCardData & { score: number })[] = [];
+
+    for (const recId of topRecIds) {
+      const currentAnimeDoc = docMap.get(recId);
+      const currentAnimeScore = scoreMap.get(recId);
+
+      if (!currentAnimeDoc || currentAnimeScore === undefined) continue;
+
+      animeResults.push({
+        ...currentAnimeDoc,
+        _id: currentAnimeDoc._id.toString(),
+        score: currentAnimeScore,
+      });
+    }
+
+    return animeResults;
   }
 
   // TODO: UNHAPPY PATH POPULAR RECOMMEND
