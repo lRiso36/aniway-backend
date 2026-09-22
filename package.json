@@ -4,7 +4,7 @@
   "description": "Networking platform to track animes user has watched and find other users by their watched animes.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx jest",
     "build": "npx tsc",
     "start": "node ./dist/server.js",
     "dev:server": "ts-node-dev --respawn --transpile-only --files src/server.ts",

@@ -1,6 +1,6 @@
 import AnimeModel from '../models/anime.model';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
-import { AnimeCardData } from '../types/anilist.types';
+import { ANIME_CARD_FIELDS, AnimeCardData } from '../types/anilist.types';
 import { UserAnimeEntryWithEmbedding } from '../types/embedAnime.types';
 
 export async function getRecommendedAnimes(
@@ -71,9 +71,7 @@ export async function getRecommendedAnimes(
     const animeDocs = await AnimeModel.find({
       _id: { $in: topRecIds },
     })
-      .select(
-        '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
-      )
+      .select(ANIME_CARD_FIELDS)
       .lean();
 
     //map all ids and docs for shoter lookup
@@ -97,9 +95,7 @@ export async function getRecommendedAnimes(
     return animeResults;
   } else {
     const animeDocs = await AnimeModel.find()
-      .select(
-        '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate'
-      )
+      .select(ANIME_CARD_FIELDS)
       .lean()
       .sort({ popularity: -1, favourites: -1 })
       .limit(limit);

@@ -123,12 +123,12 @@ export type AnimeCardData = {
   displayTitle?: string;
   coverLarge: string;
   coverExtraLarge?: string;
+  coverColor?: string;
   bannerImage?: string;
   episodeCount?: number;
   averageScore?: number;
   genres: string[];
   description?: string;
-  detailsCached: boolean;
   startDate?: { year?: number; month?: number; day?: number };
 };
 
@@ -187,3 +187,6 @@ export interface AniListDetailResult extends AniListSearchResult {
   externalLinks: AniListExternalLinkResult[];
   trailer?: AniListTrailerResult;
 }
+
+export const ANIME_CARD_FIELDS =
+  '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate coverColor';

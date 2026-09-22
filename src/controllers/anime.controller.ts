@@ -155,7 +155,43 @@ class AnimeController extends BaseController<Anime> {
     }
   }
 
+  // export type AnimeCardData = {
+  //   _id: string;
+  //   anilistId: number;
+  //   malId?: number;
+  //   titleEnglish?: string;
+  //   titleRomaji: string;
+  //   displayTitle?: string;
+  //   coverLarge: string;
+  //   coverExtraLarge?: string;
+  //   bannerImage?: string;
+  //   episodeCount?: number;
+  //   averageScore?: number;
+  //   genres: string[];
+  //   description?: string;
+  //   detailsCached: boolean;
+  //   startDate?: { year?: number; month?: number; day?: number };
+  // };
+
   async animeFilter(req: Request, res: Response) {
+    const CARD_FIELDS = {
+      anilistId: 1,
+      malId: 1,
+      titleEnglish: 1,
+      titleRomaji: 1,
+      displayTitle: 1,
+      coverLarge: 1,
+      coverExtraLarge: 1,
+      bannerImage: 1,
+      episodeCount: 1,
+      coverImage: 1,
+      averageScore: 1,
+      genres: 1,
+      description: 1,
+      detailsCached: 1,
+      startDate: 1,
+      coverColor: 1,
+    }
     try {
       const { q, genre, tag, year, season, format, status, sort, page, limit } =
         SearchAnimeSchema.parse(req.query);
@@ -186,7 +222,9 @@ class AnimeController extends BaseController<Anime> {
         sortObj = sortMap['POPULARITY_DESC'];
       }
 
-      const projection = q ? { score: { $meta: 'textScore' } } : {};
+      const projection = q 
+      ? { ...CARD_FIELDS, score: { $meta: 'textScore' } } 
+      : CARD_FIELDS;
 
       const skip = (page - 1) * limit;
 
@@ -194,7 +232,8 @@ class AnimeController extends BaseController<Anime> {
         AnimeModel.find(filter, projection)
           .sort(sortObj)
           .skip(skip)
-          .limit(limit),
+          .limit(limit)
+          .lean(),
         AnimeModel.countDocuments(filter),
       ]);
 
