@@ -1,3 +1,10 @@
+jest.mock('../utils/mailer.util', () => ({
+  __esModule: true,
+  default: {
+    sendMail: jest.fn().mockResolvedValue({ accepted: ['test@example.com'] }),
+  },
+}));
+
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
