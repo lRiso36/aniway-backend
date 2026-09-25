@@ -4,6 +4,7 @@ jest.mock('../utils/mailer.util', () => ({
     sendMail: jest.fn().mockResolvedValue({ accepted: ['test@example.com'] }),
   },
 }));
+// hoist mock email before everything else
 
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
