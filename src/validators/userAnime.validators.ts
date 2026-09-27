@@ -26,6 +26,7 @@ export const LogAnimeSchema = z.object({
   startDate: z.coerce.date().optional(),
   finishDate: z.coerce.date().optional(),
   notes: z.string().max(1000).optional(),
+  isFavorite: z.boolean().optional(),
 });
 
 export const ToggleFavoriteSchema = z.object({

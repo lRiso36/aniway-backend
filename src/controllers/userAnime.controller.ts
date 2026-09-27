@@ -43,6 +43,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
         startDate,
         finishDate,
         notes,
+        isFavorite,
       } = LogAnimeSchema.parse(req.body);
 
       const userId = req.meta?.user?._id;
@@ -58,6 +59,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
             startDate,
             finishDate,
             notes,
+            isFavorite,
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
