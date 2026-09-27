@@ -23,8 +23,8 @@ export const LogAnimeSchema = z.object({
   currentEpisode: z.number().int().min(0).optional(),
   repeatCount: z.number().int().min(0).optional(),
   score: z.number().int().min(0).max(10).optional(),
-  startDate: z.date().optional(),
-  finishDate: z.date().optional(),
+  startDate: z.coerce.date().optional(),
+  finishDate: z.coerce.date().optional(),
   notes: z.string().max(1000).optional(),
 });
 

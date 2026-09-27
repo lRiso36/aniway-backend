@@ -9,12 +9,42 @@ import {
   RemoveAnimeEntrySchema,
   ToggleFavoriteSchema,
 } from '../validators/userAnime.validators';
+import type { UserAnimeEntryPopulated } from '../types/entry.types';
 
 class UserAnimeController extends BaseController<UserAnimeEntry> {
   constructor() {
     super(UserAnimeEntryModel);
   }
 
+  async getUserAnimeEntries(req: Request, res: Response) {
+    try {
+      const userId = req.meta?.user?._id;
+
+      const userAnime = (await UserAnimeEntryModel.find({ user: userId })
+        .populate('anime', 'anilistId')
+        .lean()) as unknown as UserAnimeEntryPopulated[];
+
+      const entries = userAnime.map((entry) => ({
+        _id: entry._id,
+        user: entry.user,
+        anime: entry.anime._id,
+        anilistId: entry.anime?.anilistId,
+        status: entry.status,
+        currentEpisode: entry.currentEpisode ?? undefined,
+        score: entry.score ?? undefined,
+        startDate: entry.startDate ?? undefined,
+        finishDate: entry.finishDate ?? undefined,
+        repeatCount: entry.repeatCount,
+        notes: entry.notes ?? undefined,
+        isFavorite: entry.isFavorite,
+        createdAt: entry.createdAt,
+        updatedAt: entry.updatedAt,
+      }));
+      return res.status(200).json(entries);
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+  }
   async logAnime(req: Request, res: Response) {
     try {
       const {

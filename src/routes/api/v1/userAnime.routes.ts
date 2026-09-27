@@ -12,5 +12,9 @@ router.delete(
   '/:animeId',
   userAnimeController.removeAnimeEntry.bind(userAnimeController)
 );
+router.get(
+  '/',
+  userAnimeController.getUserAnimeEntries.bind(userAnimeController)
+);
 
 export default router;
