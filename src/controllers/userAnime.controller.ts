@@ -10,6 +10,7 @@ import {
   ToggleFavoriteSchema,
 } from '../validators/userAnime.validators';
 import type { UserAnimeEntryPopulated } from '../types/entry.types';
+import { mapEntry } from '../utils/mapEntry.util';
 
 class UserAnimeController extends BaseController<UserAnimeEntry> {
   constructor() {
@@ -24,22 +25,8 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
         .populate('anime', 'anilistId')
         .lean()) as unknown as UserAnimeEntryPopulated[];
 
-      const entries = userAnime.map((entry) => ({
-        _id: entry._id,
-        user: entry.user,
-        anime: entry.anime._id,
-        anilistId: entry.anime?.anilistId,
-        status: entry.status,
-        currentEpisode: entry.currentEpisode ?? undefined,
-        score: entry.score ?? undefined,
-        startDate: entry.startDate ?? undefined,
-        finishDate: entry.finishDate ?? undefined,
-        repeatCount: entry.repeatCount,
-        notes: entry.notes ?? undefined,
-        isFavorite: entry.isFavorite,
-        createdAt: entry.createdAt,
-        updatedAt: entry.updatedAt,
-      }));
+      const entries = userAnime.map(mapEntry);
+
       return res.status(200).json(entries);
     } catch (error) {
       this.errorHandler(error as Error, req, res);
@@ -60,7 +47,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
       const userId = req.meta?.user?._id;
 
-      const savedEntry = await UserAnimeEntryModel.findOneAndUpdate(
+      const savedEntry = (await UserAnimeEntryModel.findOneAndUpdate(
         { user: userId, anime: animeId },
         {
           $set: {
@@ -74,9 +61,11 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
+      )
+        .populate('anime', 'anilistId')
+        .lean()) as unknown as UserAnimeEntryPopulated;
 
-      return res.status(200).json(savedEntry);
+      return res.status(200).json(mapEntry(savedEntry));
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
@@ -98,17 +87,17 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
 
       const newFavoriteValue = !existing?.isFavorite;
 
-      const entry = await UserAnimeEntryModel.findOneAndUpdate(
+      const entry = (await UserAnimeEntryModel.findOneAndUpdate(
         { user: userId, anime: animeId },
         {
-          $set: {
-            isFavorite: newFavoriteValue,
-          },
+          $set: { isFavorite: newFavoriteValue },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
+      )
+        .populate('anime', 'anilistId')
+        .lean()) as unknown as UserAnimeEntryPopulated;
 
-      return res.status(200).json(entry);
+      return res.status(200).json(mapEntry(entry));
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }

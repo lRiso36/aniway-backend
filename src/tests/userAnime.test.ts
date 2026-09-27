@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import app from '../app';
+import AnimeModel from '../models/anime.model'; // adjust to your actual path
 
 jest.mock('../utils/mailer.util', () => ({
   __esModule: true,
@@ -16,6 +17,18 @@ describe('User Anime routes', () => {
     password: 'Password123!',
   };
   const fakeAnimeId = new mongoose.Types.ObjectId().toString();
+  const testAnilistId = 12345;
+  let animeId: string;
+
+  beforeEach(async () => {
+    const anime = await AnimeModel.create({
+      anilistId: testAnilistId,
+      titleRomaji: 'Test Anime',
+      displayTitle: 'Test Anime',
+      coverLarge: 'https://example.com/cover.jpg',
+    });
+    animeId = anime._id.toString();
+  });
 
   async function getAuthHeader() {
     const res = await request(app)
@@ -31,11 +44,24 @@ describe('User Anime routes', () => {
       const res = await request(app)
         .patch('/api/v1/user-anime/log')
         .set('Authorization', authHeader)
-        .send({ animeId: fakeAnimeId, status: 'watching', currentEpisode: 5 });
+        .send({ animeId, status: 'watching', currentEpisode: 5 });
 
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('watching');
       expect(res.body.currentEpisode).toBe(5);
+    });
+
+    test('returns the serialized entry shape', async () => {
+      const authHeader = await getAuthHeader();
+
+      const res = await request(app)
+        .patch('/api/v1/user-anime/log')
+        .set('Authorization', authHeader)
+        .send({ animeId, status: 'watching' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.anilistId).toBe(testAnilistId);
+      expect(res.body.anime).toBe(animeId);
     });
 
     test('rejects when not authenticated', async () => {
@@ -65,15 +91,17 @@ describe('User Anime routes', () => {
       const first = await request(app)
         .patch('/api/v1/user-anime/toggle-favorite')
         .set('Authorization', authHeader)
-        .send({ animeId: fakeAnimeId });
+        .send({ animeId });
 
       expect(first.status).toBe(200);
       expect(first.body.isFavorite).toBe(true);
+      expect(first.body.anilistId).toBe(testAnilistId);
+      expect(first.body.anime).toBe(animeId);
 
       const second = await request(app)
         .patch('/api/v1/user-anime/toggle-favorite')
         .set('Authorization', authHeader)
-        .send({ animeId: fakeAnimeId });
+        .send({ animeId });
 
       expect(second.status).toBe(200);
       expect(second.body.isFavorite).toBe(false);
@@ -87,10 +115,10 @@ describe('User Anime routes', () => {
       await request(app)
         .patch('/api/v1/user-anime/log')
         .set('Authorization', authHeader)
-        .send({ animeId: fakeAnimeId, status: 'watching' });
+        .send({ animeId, status: 'watching' });
 
       const res = await request(app)
-        .delete(`/api/v1/user-anime/${fakeAnimeId}`)
+        .delete(`/api/v1/user-anime/${animeId}`)
         .set('Authorization', authHeader);
 
       expect(res.status).toBe(200);
@@ -101,7 +129,7 @@ describe('User Anime routes', () => {
       const authHeader = await getAuthHeader();
 
       const res = await request(app)
-        .delete(`/api/v1/user-anime/${fakeAnimeId}`)
+        .delete(`/api/v1/user-anime/${animeId}`)
         .set('Authorization', authHeader);
 
       expect(res.status).toBe(404);
