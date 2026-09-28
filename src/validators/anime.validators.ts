@@ -42,7 +42,7 @@ const statusEnum = z.enum([
 
 const sortEnum = z.enum([
   'POPULARITY_DESC',
-  // "TRENDING_DESC",
+  "TRENDING_DESC",
   'SCORE_DESC',
   'FAVOURITES_DESC',
   'TITLE',

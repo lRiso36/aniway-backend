@@ -24,6 +24,7 @@ export interface AniListMediaResponse {
   description: string | null;
   popularity: number;
   favourites: number;
+  trending: number;
   isAdult: boolean;
   tags:
     | {
@@ -109,6 +110,7 @@ export interface AniListSearchResult {
   startDate?: { year?: number; month?: number; day?: number };
   popularity: number;
   favourites: number;
+  trending: number;
   isAdult: boolean;
   tags?: AniListTagResult[];
   synonyms: string[];
@@ -189,4 +191,4 @@ export interface AniListDetailResult extends AniListSearchResult {
 }
 
 export const ANIME_CARD_FIELDS =
-  '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate coverColor';
+  '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore trending genres description detailsCached startDate coverColor';

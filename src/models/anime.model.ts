@@ -193,6 +193,7 @@ export interface Anime {
   synonyms: string[]; // alternate titles for search
   popularity: number; //how many have this in their list
   favourites: number; //how many favorited this
+  trending: number;
   isAdult: boolean; //filtering no adult shows
   trailer?: Trailer; //
   coverColor?: string; //for UX design //
@@ -269,6 +270,7 @@ const animeSchema = new Schema<Anime>({
   synonyms: [{ type: String }],
   popularity: { type: Number, required: true, default: 0 },
   favourites: { type: Number, required: true, default: 0 },
+  trending: {type: Number, required: true, default: 0},
   isAdult: { type: Boolean, required: true, default: false },
   trailer: trailerSchema,
   coverColor: { type: String },
@@ -294,6 +296,7 @@ animeSchema.index({ popularity: -1 });
 animeSchema.index({ averageScore: -1 });
 animeSchema.index({ favourites: -1 });
 animeSchema.index({ displayTitle: 1 });
+animeSchema.index({ trending: -1 });
 
 const AnimeModel = mongoose.model<Anime>('Anime', animeSchema);
 

@@ -41,6 +41,7 @@ const ANIME_DETAIL_QUERY = `
     Media(id: $id, type: ANIME) {
         id
         idMal
+        trending
         title {
             english
             romaji
@@ -239,6 +240,7 @@ export const formatAnimeDetails = (anime: AniListMediaDetailResponse) => {
     bannerImage: anime.bannerImage ?? undefined,
     episodeCount: anime.episodes ?? undefined,
     averageScore: anime.averageScore ?? undefined,
+    trending: anime.trending ?? undefined,
     genres: anime.genres ?? [],
     description: anime.description ?? undefined,
     startDate: anime.startDate

@@ -187,6 +187,7 @@ class AnimeController extends BaseController<Anime> {
       episodeCount: 1,
       coverImage: 1,
       averageScore: 1,
+      trending: 1,
       genres: 1,
       description: 1,
       detailsCached: 1,
@@ -212,6 +213,7 @@ class AnimeController extends BaseController<Anime> {
         SCORE_DESC: { averageScore: -1 },
         FAVOURITES_DESC: { favourites: -1 },
         TITLE: { displayTitle: 1 },
+        TRENDING: { trending: -1 },
       };
 
       let sortObj;
