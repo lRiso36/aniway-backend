@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { anilistDeltaSync } from './anilistDeltaSync';
 import { jikanEpisodeRetry } from './jikanEpisodeRetry';
 import logger from '../logs/logger';
+import { syncTrending } from './syncTrending';
 
 export function startScheduledJobs() {
   cron.schedule('0 21 * * *', async () => {
@@ -23,6 +24,16 @@ export function startScheduledJobs() {
       logger.info('Jikan episode retry complete.');
     } catch (err) {
       logger.error(`Jikan episode retry failed: ${err}`);
+    }
+  });
+
+  cron.schedule('0 20 * * *', async () => {
+    logger.info('Strating trending anime sync');
+    try {
+      await syncTrending();
+      logger.info('Tredning anime sync complete');
+    } catch (err) {
+      logger.error(`Anime trending sync failed: ${err}`);
     }
   });
 }

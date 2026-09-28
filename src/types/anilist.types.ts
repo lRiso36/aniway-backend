@@ -192,3 +192,8 @@ export interface AniListDetailResult extends AniListSearchResult {
 
 export const ANIME_CARD_FIELDS =
   '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore trending genres description detailsCached startDate coverColor';
+
+export interface AniListTrendingResult {
+  id: number;
+  trending: number;
+}
