@@ -2,6 +2,7 @@ import AnimeModel from '../models/anime.model';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import { ANIME_CARD_FIELDS, AnimeCardData } from '../types/anilist.types';
 import { UserAnimeEntryWithEmbedding } from '../types/embedAnime.types';
+import { getEmbeddingCache } from './animeEmbedCache';
 
 export async function getRecommendedAnimes(
   userId: string,
@@ -11,6 +12,7 @@ export async function getRecommendedAnimes(
     score: number | null;
   })[]
 > {
+  console.time('user-entries');
   const userAnime = (await UserAnimeEntryModel.find({
     user: userId,
     status: { $in: ['completed', 'watching', 'rewatching', 'paused'] },
@@ -18,7 +20,7 @@ export async function getRecommendedAnimes(
     'anime',
     'embedding'
   )) as unknown as UserAnimeEntryWithEmbedding[];
-
+  console.timeEnd('user-entries');
   const filteredAnime = userAnime.filter(
     (entry) => entry.anime && entry.anime.embedding
   );
@@ -43,18 +45,21 @@ export async function getRecommendedAnimes(
     //average out vector
     const userVector = weightedSum.map((value) => value / totalWeight);
 
-    const userAnimeIds = filteredAnime.map((entry) => entry.anime._id);
+    const userAnimeIds = new Set(
+      filteredAnime.map((entry) => 
+        entry.anime._id.toString()
+    ));
 
-    const allAnime = await AnimeModel.find({
-      _id: { $nin: userAnimeIds },
-      embedding: { $exists: true },
-    }).select('embedding');
+    const allAnime = await getEmbeddingCache();
 
     const scored = allAnime
-      .filter((anime) => anime.embedding!.length === userVector.length)
+      .filter(
+        (anime) => 
+          !userAnimeIds.has(anime.id) &&
+          anime.embedding.length === userVector.length)
       .map((anime) => ({
-        animeId: anime.id.toString(),
-        score: cosineSimilarity(anime.embedding!, userVector),
+        animeId: anime.id,
+        score: cosineSimilarity(anime.embedding, userVector),
       }));
 
     const sorted = scored.sort((a, b) => b.score - a.score);
@@ -111,22 +116,21 @@ export async function getRecommendedAnimes(
   }
 }
 
-function dotProduct(vectorA: number[], vectorB: number[]): number {
-  const dotProduct = vectorA.reduce(
-    (sum, value, index) => sum + value * vectorB[index]!,
-    0
-  );
-  return dotProduct;
+type Vector = number[] | Float32Array;
+
+function dotProduct(a: Vector, b: Vector): number {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += a[i]! * b[i]!;
+  return sum;
 }
 
-function magnitude(vector: number[]): number {
-  const squaredSum = vector.reduce((sum, value) => sum + value ** 2, 0);
-  const magnitude = Math.sqrt(squaredSum);
-
-  return magnitude;
+function magnitude(v: Vector): number {
+  let sum = 0;
+  for (let i = 0; i < v.length; i++) sum += v[i]! * v[i]!;
+  return Math.sqrt(sum);
 }
 
-function cosineSimilarity(vectorA: number[], vectorB: number[]): number {
+function cosineSimilarity(vectorA: Vector, vectorB: Vector): number {
   const denom = magnitude(vectorA) * magnitude(vectorB);
   if (denom === 0) return 0;
   return dotProduct(vectorA, vectorB) / denom;

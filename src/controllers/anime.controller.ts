@@ -13,6 +13,7 @@ import {
   SearchAnimeSchema,
 } from '../validators/anime.validators';
 import { getRecommendedAnimes } from '../services/recommendation.service';
+import logger from '../logs/logger';
 
 class AnimeController extends BaseController<Anime> {
   constructor() {
@@ -222,9 +223,9 @@ class AnimeController extends BaseController<Anime> {
         sortObj = sortMap['POPULARITY_DESC'];
       }
 
-      const projection = q 
-      ? { ...CARD_FIELDS, score: { $meta: 'textScore' } } 
-      : CARD_FIELDS;
+      const projection = q
+        ? { ...CARD_FIELDS, score: { $meta: 'textScore' } }
+        : CARD_FIELDS;
 
       const skip = (page - 1) * limit;
 
@@ -259,6 +260,8 @@ class AnimeController extends BaseController<Anime> {
 
       return res.status(200).json(recommendedAnime);
     } catch (error) {
+      logger.error(error instanceof Error ? error.stack ?? error.message : String(error));
+      console.error(error)
       this.errorHandler(error as Error, req, res);
     }
   }
