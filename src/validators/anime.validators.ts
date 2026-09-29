@@ -42,7 +42,7 @@ const statusEnum = z.enum([
 
 const sortEnum = z.enum([
   'POPULARITY_DESC',
-  "TRENDING_DESC",
+  'TRENDING_DESC',
   'SCORE_DESC',
   'FAVOURITES_DESC',
   'TITLE',
@@ -86,5 +86,9 @@ export const GetAnimeByIdSchema = z.object({
 });
 
 export const GetRecommendedAnimeSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+});
+
+export const getTrendingAnimeSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional(),
 });

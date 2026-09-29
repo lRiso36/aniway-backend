@@ -25,6 +25,7 @@ export async function syncTrending() {
     }
   }
 
+  logger.info(`Fetched ${trendingAnime.length} trending anime from AniList`);
   await processTrendingAnime(trendingAnime);
   logger.info(`syncTrending updated ${trendingAnime.length} anime`);
 }

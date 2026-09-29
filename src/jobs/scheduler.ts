@@ -27,8 +27,8 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('0 20 * * *', async () => {
-    logger.info('Strating trending anime sync');
+  cron.schedule('5 20 * * *', async () => {
+    logger.info('Starting trending anime sync');
     try {
       await syncTrending();
       logger.info('Tredning anime sync complete');
