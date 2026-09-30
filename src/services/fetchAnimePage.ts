@@ -31,7 +31,8 @@ export async function fetchAniList(query: string, variables: any, retries = 3) {
     }
 
     const retryAfter = response.headers.get('Retry-After');
-    const waitMs = retryAfter ? Number(retryAfter) * 1000 : 5000;
+    const seconds = Number(retryAfter);
+    const waitMs = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 5000;
     logger.error(
       `Rate limited on request with variables ${JSON.stringify(variables)}, waiting ${waitMs}ms`
     );

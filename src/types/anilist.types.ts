@@ -197,3 +197,11 @@ export interface AniListTrendingResult {
   id: number;
   trending: number;
 }
+
+export interface AiringScheduleNode {
+    id: number;
+    airingAt: number; // unix seconds
+    episode: number;
+    mediaId: number;
+    media: { isAdult: boolean } | null;
+}

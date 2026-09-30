@@ -12,7 +12,7 @@ import {
 export async function anilistDeltaSync() {
   const syncState = await SyncState.findOneAndUpdate(
     { key: 'anilist-sync' },
-    { $setOnInster: { lastSyncedAt: null } },
+    { $setOnInsert: { lastSyncedAt: null } },
     { upsert: true, new: true }
   );
 
