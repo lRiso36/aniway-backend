@@ -17,15 +17,7 @@ const router = Router();
 router.post('/', usersController.create.bind(usersController));
 router.get('/', usersController.list.bind(usersController));
 
-router.get(
-  '/me',
-  authMiddleware,
-  (req, res, next) => {
-    console.log('TIMESTAMP', new Date().toISOString());
-    next();
-  },
-  usersController.me.bind(usersController)
-);
+router.get('/me', authMiddleware, usersController.me.bind(usersController));
 
 router.patch(
   '/avatar',
