@@ -3,9 +3,10 @@ import { anilistDeltaSync } from './anilistDeltaSync';
 import { jikanEpisodeRetry } from './jikanEpisodeRetry';
 import logger from '../logs/logger';
 import { syncTrending } from './syncTrending';
+import { syncAiring } from './syncAiring';
 
 export function startScheduledJobs() {
-  cron.schedule('0 21 * * *', async () => {
+  cron.schedule('12 22 * * *', async () => {
     logger.info('Starting AniList delta sync');
     try {
       const changedIds = await anilistDeltaSync();
@@ -31,9 +32,18 @@ export function startScheduledJobs() {
     logger.info('Starting trending anime sync');
     try {
       await syncTrending();
-      logger.info('Tredning anime sync complete');
+      logger.info('Trending anime sync complete');
     } catch (err) {
       logger.error(`Anime trending sync failed: ${err}`);
+    }
+  });
+  cron.schedule('10 22 * * *', async () => {
+    logger.info('Starting airing anime sync');
+    try {
+      await syncAiring();
+      logger.info('Airing anime sync completed');
+    } catch (err) {
+      logger.error(`Anime airing sync failed: ${err}`);
     }
   });
 }

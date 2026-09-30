@@ -9,25 +9,25 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
 interface Airing {
-    scheduleId: number;
-    anilistId: number;
-    anime: Types.ObjectId;
-    episode: number;
-    airingAt: Date;
-    isAdult: boolean;
+  scheduleId: number;
+  anilistId: number;
+  anime: Types.ObjectId;
+  episode: number;
+  airingAt: Date;
+  isAdult: boolean;
 }
 
 const airingSchema = new Schema<Airing>(
-    {
-        scheduleId: { type: Number, required: true, unique: true },
-        anilistId: { type: Number, required: true },
-        anime: { type: Schema.Types.ObjectId, required: true, ref: 'Anime' },
-        episode: { type: Number, required: true },
-        airingAt: { type: Date, required: true },
-        isAdult: { type: Boolean, required: true, default: false }
-    },
-    { timestamps: true }
-)
+  {
+    scheduleId: { type: Number, required: true, unique: true },
+    anilistId: { type: Number, required: true },
+    anime: { type: Schema.Types.ObjectId, required: true, ref: 'Anime' },
+    episode: { type: Number, required: true },
+    airingAt: { type: Date, required: true },
+    isAdult: { type: Boolean, required: true, default: false },
+  },
+  { timestamps: true }
+);
 
 airingSchema.index({ airingAt: 1, isAdult: 1 });
 
