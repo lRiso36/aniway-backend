@@ -62,7 +62,6 @@ class UsersController extends BaseController<User> {
   async deleteAccount(req: Request, res: Response) {
     try {
       const userId = req.meta!.user!._id;
-
       //TODO: POSSIBLY MORE? ASK ABOUT AUTH TOKEN ANDVERIFICATION TOKEN MODEL
       await Promise.all([
         UserAnimeEntryModel.deleteMany({
@@ -72,8 +71,7 @@ class UsersController extends BaseController<User> {
           userId,
         }),
       ]);
-      await UserModel.findByIdAndDelete({ userId });
-
+      await UserModel.findByIdAndDelete(userId);
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
       res.status(200).json({ message: 'Account deleted' });
