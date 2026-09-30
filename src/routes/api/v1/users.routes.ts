@@ -25,6 +25,12 @@ router.patch(
   handleAvatarUpload,
   usersController.updateAvatar.bind(usersController)
 );
+
+router.delete(
+  '/delete-account',
+  authMiddleware,
+  usersController.deleteAccount.bind(usersController)
+);
 router.get('/:id', usersController.getById.bind(usersController));
 router.patch('/:id', usersController.update.bind(usersController));
 router.delete('/:id', usersController.delete.bind(usersController));
