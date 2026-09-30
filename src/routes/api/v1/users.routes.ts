@@ -21,6 +21,7 @@ router.get('/me', authMiddleware, usersController.me.bind(usersController));
 
 router.patch(
   '/avatar',
+  authMiddleware,
   handleAvatarUpload,
   usersController.updateAvatar.bind(usersController)
 );
