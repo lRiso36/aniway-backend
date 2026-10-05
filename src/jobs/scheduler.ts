@@ -6,7 +6,7 @@ import { syncTrending } from './syncTrending';
 import { syncAiring } from './syncAiring';
 
 export function startScheduledJobs() {
-  cron.schedule('12 22 * * *', async () => {
+  cron.schedule('38 14 * * *', async () => {
     logger.info('Starting AniList delta sync');
     try {
       const changedIds = await anilistDeltaSync();
