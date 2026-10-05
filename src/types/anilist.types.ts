@@ -191,7 +191,7 @@ export interface AniListDetailResult extends AniListSearchResult {
 }
 
 export const ANIME_CARD_FIELDS =
-  '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description detailsCached startDate coverColor';
+  '_id anilistId malId titleEnglish titleRomaji displayTitle coverLarge coverExtraLarge bannerImage episodeCount averageScore genres description startDate coverColor';
 
 export interface AniListTrendingResult {
   id: number;
@@ -199,9 +199,9 @@ export interface AniListTrendingResult {
 }
 
 export interface AiringScheduleNode {
-    id: number;
-    airingAt: number; // unix seconds
-    episode: number;
-    mediaId: number;
-    media: { isAdult: boolean } | null;
+  id: number;
+  airingAt: number; // unix seconds
+  episode: number;
+  mediaId: number;
+  media: { isAdult: boolean } | null;
 }

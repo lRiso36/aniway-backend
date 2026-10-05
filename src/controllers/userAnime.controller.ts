@@ -5,12 +5,17 @@ import UserAnimeEntryModel, {
   UserAnimeEntry,
 } from '../models/userAnimeEntry.model';
 import {
+  GetUserAnimeSchema,
   LogAnimeSchema,
   RemoveAnimeEntrySchema,
   ToggleFavoriteSchema,
 } from '../validators/userAnime.validators';
-import type { UserAnimeEntryPopulated } from '../types/entry.types';
-import { mapEntry } from '../utils/mapEntry.util';
+import type {
+  UserAnimeEntryPopulated,
+  UserAnimeEntryWithAnimePopulated,
+} from '../types/entry.types';
+import { mapEntry, mapEntryWithAnime } from '../utils/mapEntry.util';
+import { ANIME_CARD_FIELDS } from '../types/anilist.types';
 
 class UserAnimeController extends BaseController<UserAnimeEntry> {
   constructor() {
@@ -20,18 +25,30 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
   async getUserAnimeEntries(req: Request, res: Response) {
     try {
       const userId = req.meta?.user?._id;
+      const { includeAnime } = GetUserAnimeSchema.parse(req.query);
 
-      const userAnime = (await UserAnimeEntryModel.find({ user: userId })
-        .populate('anime', 'anilistId')
-        .lean()) as unknown as UserAnimeEntryPopulated[];
+      if (includeAnime) {
+        const userAnime = (await UserAnimeEntryModel.find({ user: userId })
+          .populate('anime', ANIME_CARD_FIELDS)
+          .lean()) as unknown as UserAnimeEntryWithAnimePopulated[];
 
-      const entries = userAnime.map(mapEntry);
+        const entrieswithAnime = userAnime.map(mapEntryWithAnime);
 
-      return res.status(200).json(entries);
+        return res.status(200).json(entrieswithAnime);
+      } else {
+        const userAnime = (await UserAnimeEntryModel.find({ user: userId })
+          .populate('anime', 'anilistId')
+          .lean()) as unknown as UserAnimeEntryPopulated[];
+
+        const entries = userAnime.map(mapEntry);
+
+        return res.status(200).json(entries);
+      }
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
   }
+
   async logAnime(req: Request, res: Response) {
     try {
       const {

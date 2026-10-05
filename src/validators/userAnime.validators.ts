@@ -36,3 +36,10 @@ export const ToggleFavoriteSchema = z.object({
 export const RemoveAnimeEntrySchema = z.object({
   animeId: AnimeIdSchema,
 });
+
+export const GetUserAnimeSchema = z.object({
+  includeAnime: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+});
