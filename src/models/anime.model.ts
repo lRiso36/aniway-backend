@@ -31,7 +31,7 @@ interface FuzzyDate {
 
 interface Episode {
   episodeNumber: number;
-  relativeNumber: number;
+  relativeNumber?: number;
   title?: string;
   titleJapanese?: string;
   airedAt?: Date;

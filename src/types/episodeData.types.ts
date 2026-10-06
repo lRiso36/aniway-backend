@@ -1,7 +1,6 @@
 export interface KitsuEpisodeAttributes {
   number: number | null;
   relativeNumber: number | null;
-  seasonNumber: number | null;
   canonicalTitle: string | null;
   titles?: { ja_jp?: string | null };
   airdate: string | null;
@@ -9,11 +8,10 @@ export interface KitsuEpisodeAttributes {
 
 export interface EpisodeDataType {
   episodeNumber: number;
-  title: string | null;
-  titleJapanese: string | null;
-  airedAt: Date | null;
-  relativeNumber: number | null;
-  seasonNumber: number | null;
+  relativeNumber?: number;
+  title?: string;
+  titleJapanese?: string;
+  airedAt?: Date;
   filler?: boolean;
   recap?: boolean;
 }
