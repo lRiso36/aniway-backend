@@ -1,7 +1,7 @@
 export const ANIME_DELTA_QUERY = `
-    query ($page: Int, $perPage: Int) {
+    query ($page: Int, $perPage: Int, $startGreater: FuzzyDateInt, $startLesser: FuzzyDateInt) {
     Page(page: $page, perPage: $perPage) {
-    media(type: ANIME, sort: UPDATED_AT_DESC) {
+    media(type: ANIME, sort: UPDATED_AT_DESC, startDate_greater: $startGreater, startDate_lesser: $startLesser) {
         id
         idMal
         updatedAt
