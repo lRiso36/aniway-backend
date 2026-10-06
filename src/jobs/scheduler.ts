@@ -6,7 +6,7 @@ import { syncTrending } from './syncTrending';
 import { syncAiring } from './syncAiring';
 
 export function startScheduledJobs() {
-  cron.schedule('36 23 * * *', async () => {
+  cron.schedule('35 12 * * *', async () => {
     logger.info('Starting AniList delta sync');
     try {
       const changedIds = await anilistDeltaSync();
@@ -18,7 +18,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('0 12,21 * * *', async () => {
+  cron.schedule('40 12,21 * * *', async () => {
     logger.info('Starting Jikan episode retry');
     try {
       await jikanEpisodeRetry();

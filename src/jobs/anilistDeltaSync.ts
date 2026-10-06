@@ -69,11 +69,15 @@ export async function anilistDeltaSync() {
         changedAnime.push(animeWithoutUpdatedAt);
         changedAnimeIds.push(anime.id);
 
+        logger.info(
+          `Delta sync: ${anime.id} ${anime.title?.romaji} (${anime.startDate?.year}) updated ${updatedAt.toISOString()}`
+        );
+
         if (!maxUpdatedAt || updatedAt > maxUpdatedAt) {
           maxUpdatedAt = updatedAt;
         }
       }
-      if (mediaList.length === PER_PAGE) keepGoing = false; //no more pages
+      if (mediaList.length < PER_PAGE) keepGoing = false; //no more pages
       page++;
     }
 

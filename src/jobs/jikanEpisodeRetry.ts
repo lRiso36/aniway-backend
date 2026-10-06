@@ -54,7 +54,7 @@ export async function jikanEpisodeRetry() {
         failures += 1;
         logger.error(`Failed on anime with id ${anime.anilistId}`);
       } else {
-        logger.error(`Failed for a different reason`);
+        logger.error(`Failed for a different reason on ${anime.anilistId}: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`);
         animeSpecificFailures.push(anime.anilistId);
       }
     }
