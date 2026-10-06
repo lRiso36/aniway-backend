@@ -31,22 +31,24 @@ interface FuzzyDate {
 
 interface Episode {
   episodeNumber: number;
+  relativeNumber: number;
   title?: string;
   titleJapanese?: string;
   airedAt?: Date;
-  filler: boolean;
-  recap: boolean;
+  filler?: boolean;
+  recap?: boolean;
   cachedAt: Date;
 }
 
 const episodeSchema = new Schema<Episode>(
   {
     episodeNumber: { type: Number, required: true },
+    relativeNumber: { type: Number },
     title: { type: String },
     titleJapanese: { type: String },
     airedAt: { type: Date },
-    filler: { type: Boolean, required: true, default: false },
-    recap: { type: Boolean, required: true, default: false },
+    filler: { type: Boolean },
+    recap: { type: Boolean },
     cachedAt: { type: Date, required: true, default: Date.now },
   },
   { _id: false }
@@ -173,6 +175,7 @@ export interface Anime {
   description?: string; //
   cachedAt: Date;
   malId?: number; //
+  kitsuId?: string;
   detailsCached: boolean;
   averageScore?: number; //
   source?: MediaSource; //
@@ -214,6 +217,7 @@ const animeSchema = new Schema<Anime>({
   description: { type: String },
   cachedAt: { type: Date, required: true, default: Date.now },
   malId: { type: Number },
+  kitsuId: {type: String},
   detailsCached: { type: Boolean, required: true, default: false },
   averageScore: { type: Number },
   source: {
@@ -270,7 +274,7 @@ const animeSchema = new Schema<Anime>({
   synonyms: [{ type: String }],
   popularity: { type: Number, required: true, default: 0 },
   favourites: { type: Number, required: true, default: 0 },
-  trending: {type: Number, required: true, default: 0},
+  trending: { type: Number, required: true, default: 0 },
   isAdult: { type: Boolean, required: true, default: false },
   trailer: trailerSchema,
   coverColor: { type: String },

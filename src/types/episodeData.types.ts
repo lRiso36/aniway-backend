@@ -1,19 +1,21 @@
-export interface JikanEpisodeResult {
-  mal_id: number;
-  title: string;
-  title_japanese: string | null;
-  aired: string | null;
-  filler: boolean;
-  recap: boolean;
+export interface KitsuEpisodeAttributes {
+  number: number | null;
+  relativeNumber: number | null;
+  seasonNumber: number | null;
+  canonicalTitle: string | null;
+  titles?: { ja_jp?: string | null };
+  airdate: string | null;
 }
 
 export interface EpisodeDataType {
   episodeNumber: number;
-  title: string;
+  title: string | null;
   titleJapanese: string | null;
   airedAt: Date | null;
-  filler: boolean;
-  recap: boolean;
+  relativeNumber: number | null;
+  seasonNumber: number | null;
+  filler?: boolean;
+  recap?: boolean;
 }
 
 export interface UpdateEpisodeType {
