@@ -18,7 +18,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('* 21 * * *', async () => {
+  cron.schedule('0 21 * * *', async () => {
     logger.info('Starting Kitsu new episode sync');
     try {
       await fetchNewEpisodes();
