@@ -1,8 +1,8 @@
-import connectDB from '../config/db';
-import logger from '../logs/logger';
-import AnimeModel from '../models/anime.model';
-import { KitsuInfrastructureError } from '../services/kitsu.service';
-import { processAnime } from '../services/kitsu.service';
+import connectDB from '../../config/db';
+import logger from '../../logs/logger';
+import AnimeModel from '../../models/anime.model';
+import { KitsuInfrastructureError } from '../../services/kitsu.service';
+import { processAnime } from '../../services/kitsu.service';
 
 const MAX_CONSECUTIVE_FAILURES = 5;
 

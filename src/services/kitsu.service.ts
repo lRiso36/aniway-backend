@@ -51,10 +51,13 @@ const REQUEST_DELAY_MS = 250;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export async function fetchKitsuEpisodes(kitsuId: string): Promise<EpisodeDataType[]> {
+export async function fetchKitsuEpisodes(
+    kitsuId: string,
+    startOffset = 0
+): Promise<EpisodeDataType[]> {
     const episodes: EpisodeDataType[] = [];
     let url: string | null =
-        `${KITSU_BASE_URL}/anime/${kitsuId}/episodes?page[limit]=${PAGE_LIMIT}&page[offset]=0`;
+        `${KITSU_BASE_URL}/anime/${kitsuId}/episodes?page[limit]=${PAGE_LIMIT}&page[offset]=${startOffset}`;
 
     while (url) {
         const body = await kitsuGet(url);

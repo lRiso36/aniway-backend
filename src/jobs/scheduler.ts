@@ -1,9 +1,9 @@
 import cron from 'node-cron';
 import { anilistDeltaSync } from './anilistDeltaSync';
-import { jikanEpisodeRetry } from './jikanEpisodeRetry';
 import logger from '../logs/logger';
 import { syncTrending } from './syncTrending';
 import { syncAiring } from './syncAiring';
+import { backfillEpisodes } from '../scripts/episodeSeed/kistuEpisodeFetch';
 
 export function startScheduledJobs() {
   cron.schedule('35 12 * * *', async () => {
@@ -18,13 +18,13 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('40 12,21 * * *', async () => {
-    logger.info('Starting Jikan episode retry');
+  cron.schedule('15 22 * * *', async () => {
+    logger.info('Starting Kitsu new episode sync');
     try {
-      await jikanEpisodeRetry();
-      logger.info('Jikan episode retry complete.');
+      await backfillEpisodes();
+      logger.info('Kitsu new episode sync complete.');
     } catch (err) {
-      logger.error(`Jikan episode retry failed: ${err}`);
+      logger.error(`Kitsu new episode sync failed: ${err}`);
     }
   });
 
