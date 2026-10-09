@@ -4,9 +4,7 @@ import { ANIME_DELTA_QUERY } from '../queries/updateAnimeQuery';
 import { processBatch } from '../scripts/animeSeed/seedAnimeLoad';
 import { formatAnimeDetails } from '../services/anime.service';
 import { fetchAniList } from '../services/fetchAnimePage';
-import {
-  AniListMediaDetailResponse,
-} from '../types/anilist.types';
+import { AniListMediaDetailResponse } from '../types/anilist.types';
 
 const PER_PAGE = 50;
 const MAX_PAGES = 100; // AniList won't serve past 5000 entries
@@ -24,7 +22,7 @@ const PARTITIONS: { greater?: number; lesser?: number }[] = [
     return yearRange(to - 2, to); // 2021-2023 ... 1970-1972
   }),
   { lesser: 19699999 }, // before 1970
-]
+];
 export async function anilistDeltaSync() {
   const syncState = await SyncState.findOneAndUpdate(
     { key: 'anilist-sync' },
@@ -52,7 +50,7 @@ export async function anilistDeltaSync() {
         page,
         perPage: PER_PAGE,
         startGreater: partition.greater,
-        startLesser: partition.lesser
+        startLesser: partition.lesser,
       });
 
       const mediaList = result.media;

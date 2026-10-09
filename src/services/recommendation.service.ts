@@ -46,17 +46,17 @@ export async function getRecommendedAnimes(
     const userVector = weightedSum.map((value) => value / totalWeight);
 
     const userAnimeIds = new Set(
-      filteredAnime.map((entry) => 
-        entry.anime._id.toString()
-    ));
+      filteredAnime.map((entry) => entry.anime._id.toString())
+    );
 
     const allAnime = await getEmbeddingCache();
 
     const scored = allAnime
       .filter(
-        (anime) => 
+        (anime) =>
           !userAnimeIds.has(anime.id) &&
-          anime.embedding.length === userVector.length)
+          anime.embedding.length === userVector.length
+      )
       .map((anime) => ({
         animeId: anime.id,
         score: cosineSimilarity(anime.embedding, userVector),

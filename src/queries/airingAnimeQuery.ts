@@ -1,6 +1,6 @@
 // Query: AniList's airingSchedules query inside Page
 // Vars: airingAt_greater, airingAt_lesser, sort: TIME
-// Inputs: Page, and window time range as from and to 
+// Inputs: Page, and window time range as from and to
 // Request:
 //     id -> scheduleId
 //     airingAt -> airingAt

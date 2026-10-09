@@ -193,7 +193,7 @@ class AnimeController extends BaseController<Anime> {
       detailsCached: 1,
       startDate: 1,
       coverColor: 1,
-    }
+    };
     try {
       const { q, genre, tag, year, season, format, status, sort, page, limit } =
         SearchAnimeSchema.parse(req.query);
@@ -262,8 +262,10 @@ class AnimeController extends BaseController<Anime> {
 
       return res.status(200).json(recommendedAnime);
     } catch (error) {
-      logger.error(error instanceof Error ? error.stack ?? error.message : String(error));
-      console.error(error)
+      logger.error(
+        error instanceof Error ? (error.stack ?? error.message) : String(error)
+      );
+      console.error(error);
       this.errorHandler(error as Error, req, res);
     }
   }

@@ -217,7 +217,7 @@ const animeSchema = new Schema<Anime>({
   description: { type: String },
   cachedAt: { type: Date, required: true, default: Date.now },
   malId: { type: Number },
-  kitsuId: {type: String},
+  kitsuId: { type: String },
   detailsCached: { type: Boolean, required: true, default: false },
   averageScore: { type: Number },
   source: {
