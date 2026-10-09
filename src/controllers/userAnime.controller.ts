@@ -30,7 +30,6 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       if (includeAnime) {
         const userAnime = (await UserAnimeEntryModel.find({ user: userId })
           .populate('anime', ANIME_CARD_FIELDS)
-          .sort({ updatedAt: -1 })
           .lean()) as unknown as UserAnimeEntryWithAnimePopulated[];
 
         const entrieswithAnime = userAnime.map(mapEntryWithAnime);
@@ -39,7 +38,6 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       } else {
         const userAnime = (await UserAnimeEntryModel.find({ user: userId })
           .populate('anime', 'anilistId')
-          .sort({ 'endDate.year': -1, 'endDate.month': -1, 'endDate.day': -1 })
           .lean()) as unknown as UserAnimeEntryPopulated[];
 
         const entries = userAnime.map(mapEntry);
