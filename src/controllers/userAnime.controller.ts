@@ -39,7 +39,7 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
       } else {
         const userAnime = (await UserAnimeEntryModel.find({ user: userId })
           .populate('anime', 'anilistId')
-          .sort({ updatedAt: -1 })
+          .sort({ 'endDate.year': -1, 'endDate.month': -1, 'endDate.day': -1 })
           .lean()) as unknown as UserAnimeEntryPopulated[];
 
         const entries = userAnime.map(mapEntry);
