@@ -3,10 +3,10 @@ import { anilistDeltaSync } from './anilistDeltaSync';
 import logger from '../logs/logger';
 import { syncTrending } from './syncTrending';
 import { syncAiring } from './syncAiring';
-import { backfillEpisodes } from '../scripts/episodeSeed/kistuEpisodeFetch';
+import { fetchNewEpisodes } from './fetchNewEpisodes';
 
 export function startScheduledJobs() {
-  cron.schedule('35 12 * * *', async () => {
+  cron.schedule('30 20 * * *', async () => {
     logger.info('Starting AniList delta sync');
     try {
       const changedIds = await anilistDeltaSync();
@@ -18,10 +18,10 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('15 22 * * *', async () => {
+  cron.schedule('* 21 * * *', async () => {
     logger.info('Starting Kitsu new episode sync');
     try {
-      await backfillEpisodes();
+      await fetchNewEpisodes();
       logger.info('Kitsu new episode sync complete.');
     } catch (err) {
       logger.error(`Kitsu new episode sync failed: ${err}`);
@@ -37,7 +37,7 @@ export function startScheduledJobs() {
       logger.error(`Anime trending sync failed: ${err}`);
     }
   });
-  cron.schedule('10 22 * * *', async () => {
+  cron.schedule('40 20 * * *', async () => {
     logger.info('Starting airing anime sync');
     try {
       await syncAiring();
