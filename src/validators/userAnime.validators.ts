@@ -22,7 +22,7 @@ export const LogAnimeSchema = z.object({
   status: UserAnimeStatusEnum.default('planning'),
   currentEpisode: z.number().int().min(0).optional(),
   repeatCount: z.number().int().min(0).optional(),
-  score: z.number().int().min(0).max(10).optional(),
+  score: z.number().multipleOf(0.01).min(0).max(10).optional(),
   startDate: z.coerce.date().optional(),
   finishDate: z.coerce.date().optional(),
   notes: z.string().max(1000).optional(),
