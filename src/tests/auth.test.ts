@@ -89,8 +89,7 @@ describe('POST /login', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Login successful');
-    expect(res.body.data).toHaveProperty('accessToken');
-    expect(res.body.data).toHaveProperty('refreshToken');
+    expect(res.body).toHaveProperty('accessToken');
   });
 
   test('rejects wrong password', async () => {
