@@ -26,3 +26,12 @@ export const ResetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
+
+export const GoogleLoginSchema = z.object({
+  credential: z.string().min(1),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be less than 30 characters')
+    .optional(),
+});

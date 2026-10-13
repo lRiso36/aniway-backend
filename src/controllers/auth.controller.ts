@@ -17,11 +17,13 @@ import VerificationTokenModel from '../models/verificationToken.model';
 import BaseController from './base.controller';
 import {
   ForgotPasswordSchema,
+  GoogleLoginSchema,
   LoginSchema,
   RegisterSchema,
   ResetPasswordSchema,
   VerifyEmailSchema,
 } from '../validators/auth.validator';
+import { verifyGoogleCredential } from '../services/googleAuth.service';
 
 class AuthController extends BaseController<AuthToken> {
   constructor() {
@@ -133,18 +135,79 @@ class AuthController extends BaseController<AuthToken> {
 
       const userId = user._id.toString();
 
-      const { accessToken, refreshToken } = await this.issueSession(
-        res,
-        userId
-      );
+      const tokens = await this.issueSession(res, userId);
 
       res.status(200).json({
         message: 'Login successful',
-        data: {
-          accessToken,
-          refreshToken,
-        },
+        data: tokens,
       });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+  }
+
+  async googleLogin(req: Request, res: Response) {
+    const UserModel = this.registry.get('userModel');
+
+    try {
+      const { credential, username } = GoogleLoginSchema.parse(req.body);
+      const google = await verifyGoogleCredential(credential);
+
+      const existing = await UserModel.findOne({ googleId: google.googleId });
+
+      if (existing) {
+        const tokens = await this.issueSession(res, existing._id.toString());
+        return res.status(200).json({
+          message: 'Google login successful',
+          data: tokens,
+        });
+      }
+
+      //else link by email
+      const byEmail = await UserModel.findOne({ email: google.email }).select(
+        '+password'
+      );
+
+      if (byEmail) {
+        const wasVerified = byEmail.isVerified;
+
+        byEmail.googleId = google.googleId;
+        byEmail.isVerified = true;
+
+        //clear password if not verified email and alert user
+        if (!wasVerified) byEmail.password = undefined;
+        await byEmail.save();
+
+        const tokens = await this.issueSession(res, byEmail._id.toString());
+        return res.status(200).json({
+          message: !wasVerified
+            ? 'Account linked to Google. Your old password was removed; use forgot password to set a new one'
+            : 'Google login successful',
+          data: tokens,
+        });
+      }
+
+      //else create new user
+      if (!username) {
+        return res.status(200).json({ needsUsername: true });
+      }
+
+      const taken = await UserModel.findOne({ username });
+      if (taken) {
+        throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
+      }
+
+      const user = await UserModel.create({
+        username,
+        email: google.email,
+        googleId: google.googleId,
+        isVerified: true,
+        displayName: google.name,
+        avatar: google.picture,
+      });
+
+      const tokens = await this.issueSession(res, user._id.toString());
+      return res.status(201).json({ message: 'Account created', data: tokens });
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
@@ -188,6 +251,7 @@ class AuthController extends BaseController<AuthToken> {
   }
 
   async refresh(req: Request, res: Response) {
+    //must check against stored refresh token
     try {
       const refreshToken = req.cookies.refreshToken;
 
