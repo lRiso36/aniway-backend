@@ -133,38 +133,10 @@ class AuthController extends BaseController<AuthToken> {
 
       const userId = user._id.toString();
 
-      const accessToken = signAccessToken(userId);
-      const refreshToken = signRefreshToken(userId);
-
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: ms(config.refreshTokenTtl as StringValue),
-        path: '/',
-      });
-
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: ms(config.tokenTtl as StringValue),
-      });
-
-      const authTokenDoc = await AuthTokenModel.findOne({ userId: user._id });
-
-      if (authTokenDoc) {
-        // update existing doc with new refresh token
-        await this.model.updateOne(
-          { userId: user._id },
-          { $set: { token: refreshToken } }
-        );
-      } else {
-        await this.model.create({
-          userId: user._id,
-          token: refreshToken,
-        });
-      }
+      const { accessToken, refreshToken } = await this.issueSession(
+        res,
+        userId
+      );
 
       res.status(200).json({
         message: 'Login successful',
@@ -176,6 +148,43 @@ class AuthController extends BaseController<AuthToken> {
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
+  }
+
+  private async issueSession(res: Response, userId: string) {
+    const accessToken = signAccessToken(userId);
+    const refreshToken = signRefreshToken(userId);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: ms(config.refreshTokenTtl as StringValue),
+      path: '/',
+    });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: ms(config.tokenTtl as StringValue),
+    });
+
+    const authTokenDoc = await AuthTokenModel.findOne({ userId: userId });
+
+    if (authTokenDoc) {
+      // update existing doc with new refresh token
+      await this.model.updateOne(
+        { userId: userId },
+        { $set: { token: refreshToken } }
+      );
+    } else {
+      await this.model.create({
+        userId: userId,
+        token: refreshToken,
+      });
+    }
+
+    return { accessToken, refreshToken };
   }
 
   async refresh(req: Request, res: Response) {
