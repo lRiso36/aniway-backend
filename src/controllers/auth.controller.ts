@@ -135,11 +135,11 @@ class AuthController extends BaseController<AuthToken> {
 
       const userId = user._id.toString();
 
-      const tokens = await this.issueSession(res, userId);
+      const accessToken = await this.issueSession(res, userId);
 
       res.status(200).json({
         message: 'Login successful',
-        data: tokens,
+        accessToken,
       });
     } catch (error) {
       this.errorHandler(error as Error, req, res);
@@ -156,10 +156,13 @@ class AuthController extends BaseController<AuthToken> {
       const existing = await UserModel.findOne({ googleId: google.googleId });
 
       if (existing) {
-        const tokens = await this.issueSession(res, existing._id.toString());
+        const accessToken = await this.issueSession(
+          res,
+          existing._id.toString()
+        );
         return res.status(200).json({
           message: 'Google login successful',
-          data: tokens,
+          accessToken,
         });
       }
 
@@ -178,12 +181,15 @@ class AuthController extends BaseController<AuthToken> {
         if (!wasVerified) byEmail.password = undefined;
         await byEmail.save();
 
-        const tokens = await this.issueSession(res, byEmail._id.toString());
+        const accessToken = await this.issueSession(
+          res,
+          byEmail._id.toString()
+        );
         return res.status(200).json({
           message: !wasVerified
             ? 'Account linked to Google. Your old password was removed; use forgot password to set a new one'
             : 'Google login successful',
-          data: tokens,
+          accessToken,
         });
       }
 
@@ -206,8 +212,8 @@ class AuthController extends BaseController<AuthToken> {
         avatar: google.picture,
       });
 
-      const tokens = await this.issueSession(res, user._id.toString());
-      return res.status(201).json({ message: 'Account created', data: tokens });
+      const accessToken = await this.issueSession(res, user._id.toString());
+      return res.status(201).json({ message: 'Account created', accessToken });
     } catch (error) {
       console.error(error);
       this.errorHandler(error as Error, req, res);
@@ -248,7 +254,7 @@ class AuthController extends BaseController<AuthToken> {
       });
     }
 
-    return { accessToken, refreshToken };
+    return { accessToken };
   }
 
   async refresh(req: Request, res: Response) {
