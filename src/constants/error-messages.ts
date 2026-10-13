@@ -12,6 +12,7 @@ enum ERROR_MESSAGES {
   INVALID_TOKEN = 'Invalid or expired verification token',
   SEARCH_FAILED = 'Something went wrong with your search. Please try again.',
   FORBIDDEN = 'You do not have permission to perform this action.',
+  INVALID_GOOGLE_CREDENTIALS = 'Invalid Google credentials.',
 }
 
 export default ERROR_MESSAGES;
