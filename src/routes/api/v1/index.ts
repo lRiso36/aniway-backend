@@ -16,4 +16,5 @@ router.use('/auth', authRoutes);
 router.use('/anime', animeRoutes);
 router.use('/user-anime', authMiddleware, userAnimeRoutes);
 router.use('/browse', browseRoutes);
+
 export default router;

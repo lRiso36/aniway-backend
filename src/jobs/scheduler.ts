@@ -6,7 +6,7 @@ import { syncAiring } from './syncAiring';
 import { fetchNewEpisodes } from './fetchNewEpisodes';
 
 export function startScheduledJobs() {
-  cron.schedule('30 12,20 * * *', async () => {
+  cron.schedule('40 13,20 * * *', async () => {
     logger.info('Starting AniList delta sync');
     try {
       const changedIds = await anilistDeltaSync();
@@ -18,7 +18,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('0 21 * * *', async () => {
+  cron.schedule('50 13 * * *', async () => {
     logger.info('Starting Kitsu new episode sync');
     try {
       await fetchNewEpisodes();
@@ -28,7 +28,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('5 20 * * *', async () => {
+  cron.schedule('55 13 * * *', async () => {
     logger.info('Starting trending anime sync');
     try {
       await syncTrending();
@@ -37,7 +37,7 @@ export function startScheduledJobs() {
       logger.error(`Anime trending sync failed: ${err}`);
     }
   });
-  cron.schedule('40 20 * * *', async () => {
+  cron.schedule('0 14 * * *', async () => {
     logger.info('Starting airing anime sync');
     try {
       await syncAiring();
