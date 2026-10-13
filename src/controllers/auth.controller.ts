@@ -209,6 +209,7 @@ class AuthController extends BaseController<AuthToken> {
       const tokens = await this.issueSession(res, user._id.toString());
       return res.status(201).json({ message: 'Account created', data: tokens });
     } catch (error) {
+      console.error(error);
       this.errorHandler(error as Error, req, res);
     }
   }

@@ -5,11 +5,15 @@ import ERROR_MESSAGES from '../constants/error-messages';
 const client = new OAuth2Client(config.googleClientId);
 
 export async function verifyGoogleCredential(credential: string) {
-  const ticket = await client.verifyIdToken({
-    idToken: credential,
-    audience: config.googleClientId,
-  });
-
+  let ticket;
+  try {
+    ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: config.googleClientId,
+    });
+  } catch {
+    throw new Error(ERROR_MESSAGES.INVALID_GOOGLE_CREDENTIALS);
+  }
   const payload = ticket.getPayload();
 
   if (!payload || !payload.email || !payload.email_verified) {
