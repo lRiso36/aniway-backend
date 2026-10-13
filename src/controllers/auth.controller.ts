@@ -121,7 +121,7 @@ class AuthController extends BaseController<AuthToken> {
 
       const user = await UserModel.findOne({ email }).select('+password');
 
-      if (!user) {
+      if (!user || !user.password) {
         throw new Error(this.ERROR_MESSAGES.INVALID_CREDENTIALS);
       }
 

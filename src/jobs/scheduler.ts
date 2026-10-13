@@ -18,7 +18,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('50 13 * * *', async () => {
+  cron.schedule('8 14 * * *', async () => {
     logger.info('Starting Kitsu new episode sync');
     try {
       await fetchNewEpisodes();
@@ -28,7 +28,7 @@ export function startScheduledJobs() {
     }
   });
 
-  cron.schedule('55 13 * * *', async () => {
+  cron.schedule('5 14 * * *', async () => {
     logger.info('Starting trending anime sync');
     try {
       await syncTrending();

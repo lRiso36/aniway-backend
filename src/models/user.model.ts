@@ -3,8 +3,9 @@ import bcrypt from 'bcrypt';
 
 export interface User {
   username: string;
+  googleId?: string;
   email: string;
-  password: string;
+  password?: string;
   avatar: string;
   displayName: string;
   bio: string;
@@ -20,6 +21,11 @@ const userSchema = new mongoose.Schema<User>(
       required: true,
       unique: true,
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     email: {
       type: String,
       required: true,
@@ -27,7 +33,6 @@ const userSchema = new mongoose.Schema<User>(
     },
     password: {
       type: String,
-      required: true,
       select: false,
     },
     avatar: {
@@ -63,7 +68,7 @@ const userSchema = new mongoose.Schema<User>(
 const saltRounds = 10;
 
 userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
+  if (!this.password || !this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, saltRounds);
 });
 
