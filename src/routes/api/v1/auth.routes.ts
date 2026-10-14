@@ -19,5 +19,9 @@ router.post(
   '/reset-password',
   authController.resetPassword.bind(authController)
 );
+router.get(
+  '/username-available',
+  authController.checkUsernameAvailable.bind(authController)
+);
 
 export default router;
