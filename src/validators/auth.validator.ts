@@ -37,3 +37,7 @@ export const GoogleLoginSchema = z.object({
   credential: z.string().min(1),
   username: usernameSchema.optional(),
 });
+
+export const UsernameCheckSchema = z.object({
+  username: usernameSchema,
+});

@@ -6,6 +6,7 @@ import path from 'path';
 import { writeFile } from 'fs/promises';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import PushSubscriptionModel from '../models/pushSubscription.model';
+
 // import { AvatarFileSchema } from '../validators/users.validators';
 class UsersController extends BaseController<User> {
   constructor() {

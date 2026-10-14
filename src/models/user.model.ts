@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema<User>(
     username: {
       type: String,
       required: true,
-      unique: true,
     },
     googleId: {
       type: String,
@@ -71,6 +70,11 @@ userSchema.pre('save', async function () {
   if (!this.password || !this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, saltRounds);
 });
+
+userSchema.index(
+  { username: 1 },
+  { unique: true, collation: { locale: 'en', strength: 2 } }
+);
 
 //create model
 const UserModel = mongoose.model<User>('User', userSchema);

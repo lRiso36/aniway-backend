@@ -21,9 +21,11 @@ import {
   LoginSchema,
   RegisterSchema,
   ResetPasswordSchema,
+  UsernameCheckSchema,
   VerifyEmailSchema,
 } from '../validators/auth.validator';
 import { verifyGoogleCredential } from '../services/googleAuth.service';
+import { isUsernameAvailable } from '../services/user.service';
 
 class AuthController extends BaseController<AuthToken> {
   constructor() {
@@ -37,16 +39,12 @@ class AuthController extends BaseController<AuthToken> {
       const { email, username, password } = RegisterSchema.parse(req.body);
 
       //check if existing
-      const existingUser = await UserModel.findOne({
-        $or: [{ email }, { username }],
-      });
+      if (await UserModel.exists({ email })) {
+        throw new Error(this.ERROR_MESSAGES.EMAIL_TAKEN);
+      }
 
-      if (existingUser) {
-        if (existingUser.email === email) {
-          throw new Error(this.ERROR_MESSAGES.EMAIL_TAKEN);
-        } else {
-          throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
-        }
+      if (!(await isUsernameAvailable(username))) {
+        throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
       }
 
       //register
@@ -198,7 +196,8 @@ class AuthController extends BaseController<AuthToken> {
         return res.status(200).json({ needsUsername: true });
       }
 
-      const taken = await UserModel.findOne({ username });
+      const taken = await isUsernameAvailable(username);
+
       if (taken) {
         throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
       }
@@ -407,6 +406,17 @@ class AuthController extends BaseController<AuthToken> {
       await AuthTokenModel.deleteMany({ userId: tokenDoc.userId });
 
       res.status(200).json({ message: 'Password successfully reset' });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+  }
+  async checkUsernameAvailable(req: Request, res: Response) {
+    try {
+      const { username } = UsernameCheckSchema.parse(req.query);
+
+      const available = await isUsernameAvailable(username);
+
+      res.status(200).json(available);
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
