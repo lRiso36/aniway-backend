@@ -16,5 +16,9 @@ router.get(
   '/',
   userAnimeController.getUserAnimeEntries.bind(userAnimeController)
 );
+router.get(
+  '/:anilistId',
+  userAnimeController.getUserAnimeEntry.bind(userAnimeController)
+);
 
 export default router;
