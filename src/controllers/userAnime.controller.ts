@@ -16,6 +16,8 @@ import type {
 } from '../types/entry.types';
 import { mapEntry, mapEntryWithAnime } from '../utils/mapEntry.util';
 import { ANIME_CARD_FIELDS } from '../types/anilist.types';
+import { GetAnimeByIdSchema } from '../validators/anime.validators';
+import AnimeModel from '../models/anime.model';
 
 class UserAnimeController extends BaseController<UserAnimeEntry> {
   constructor() {
@@ -49,6 +51,28 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
     }
   }
 
+  async getUserAnimeEntry(req: Request, res: Response) {
+
+    try {
+      const userId = req.meta?.user?._id;
+      const { anilistId } = GetAnimeByIdSchema.parse(req.params);
+
+      const anime = await AnimeModel.findOne({ anilistId }).select('_id').lean();
+      if (!anime) {
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND)
+      }
+
+      const entry = await UserAnimeEntryModel.findOne({
+        user: userId,
+        anime: anime._id,
+      }).lean();
+
+      res.status(200).json({ entry });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+
+  }
   async logAnime(req: Request, res: Response) {
     try {
       const {

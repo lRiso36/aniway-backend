@@ -156,24 +156,6 @@ class AnimeController extends BaseController<Anime> {
     }
   }
 
-  // export type AnimeCardData = {
-  //   _id: string;
-  //   anilistId: number;
-  //   malId?: number;
-  //   titleEnglish?: string;
-  //   titleRomaji: string;
-  //   displayTitle?: string;
-  //   coverLarge: string;
-  //   coverExtraLarge?: string;
-  //   bannerImage?: string;
-  //   episodeCount?: number;
-  //   averageScore?: number;
-  //   genres: string[];
-  //   description?: string;
-  //   detailsCached: boolean;
-  //   startDate?: { year?: number; month?: number; day?: number };
-  // };
-
   async animeFilter(req: Request, res: Response) {
     const CARD_FIELDS = {
       anilistId: 1,
