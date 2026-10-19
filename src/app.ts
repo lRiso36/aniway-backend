@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import config from './config/config';
+// import config from './config/config';
 // import userRoutes from './routes/api/v1/users.routes';
 // import pushSubscriptionRoutes from './routes/api/v1/pushSubscription.routes';
 import { morganStream } from './logs/logger';
@@ -17,7 +17,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: '*',
     credentials: true,
   })
 );
