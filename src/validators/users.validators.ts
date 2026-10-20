@@ -19,3 +19,7 @@ export const UpdateUserSchema = z.object({
   isPrivate: z.boolean(),
   isVerified: z.boolean(),
 });
+
+export const RemoveUserSchema = z.object({
+  id: z.string().refine(isValidObjectId, 'Invalid user id'),
+});

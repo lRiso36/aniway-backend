@@ -35,7 +35,7 @@ Authorization: Bearer {{accessToken}}
           
 
 ### Update user
-PUT {{baseUrl}}
+PATCH  {{baseUrl}}
 Content-Type: application/json
 
 {
@@ -48,3 +48,6 @@ Content-Type: application/json
   "isPrivate": false,
   "isVerified": true
 }
+
+### Remove user
+DELETE {{baseUrl}}/6aa88e189d4f04eac88d6faf

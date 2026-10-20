@@ -33,6 +33,6 @@ router.delete(
 );
 router.get('/:id', usersController.getById.bind(usersController));
 router.patch('/:id', usersController.update.bind(usersController));
-router.delete('/:id', usersController.delete.bind(usersController));
+router.delete('/:id', usersController.removeUser.bind(usersController));
 
 export default router;

@@ -6,7 +6,10 @@ import path from 'path';
 import { writeFile } from 'fs/promises';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import PushSubscriptionModel from '../models/pushSubscription.model';
-import { UpdateUserSchema } from '../validators/users.validators';
+import {
+  RemoveUserSchema,
+  UpdateUserSchema,
+} from '../validators/users.validators';
 
 // import { AvatarFileSchema } from '../validators/users.validators';
 class UsersController extends BaseController<User> {
@@ -112,6 +115,21 @@ class UsersController extends BaseController<User> {
       }
 
       res.status(200).json({ user });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
+    }
+  }
+
+  async removeUser(req: Request, res: Response) {
+    try {
+      const { id } = RemoveUserSchema.parse(req.params);
+
+      const user = await UserModel.findByIdAndDelete(id).lean();
+      if (!user) {
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
+      }
+
+      res.status(200).json({ message: 'User removed' });
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
