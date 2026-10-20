@@ -16,7 +16,7 @@ const router = Router();
 
 router.post('/', usersController.create.bind(usersController));
 router.get('/', usersController.list.bind(usersController));
-router.put('/', usersController.updateUser.bind(usersController));
+router.patch('/', usersController.updateUser.bind(usersController));
 router.patch('/update');
 router.get('/me', authMiddleware, usersController.me.bind(usersController));
 

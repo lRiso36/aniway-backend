@@ -34,3 +34,17 @@ GET {{baseUrl}}/me
 Authorization: Bearer {{accessToken}}
           
 
+### Update user
+PUT {{baseUrl}}
+Content-Type: application/json
+
+{
+  "id": "6aa88e189d4f04eac88d6faf",
+  "username": "newname",
+  "email": "new@example.com",
+  "displayName": "New Name",
+  "bio": "updated bio",
+  "avatar": "",
+  "isPrivate": false,
+  "isVerified": true
+}
