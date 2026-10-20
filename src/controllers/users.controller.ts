@@ -6,7 +6,7 @@ import path from 'path';
 import { writeFile } from 'fs/promises';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import PushSubscriptionModel from '../models/pushSubscription.model';
-import { isValidObjectId } from 'mongoose';
+import { UpdateUserSchema } from '../validators/users.validators';
 
 // import { AvatarFileSchema } from '../validators/users.validators';
 class UsersController extends BaseController<User> {
@@ -84,28 +84,36 @@ class UsersController extends BaseController<User> {
 
   async updateUser(req: Request, res: Response) {
     try {
-      const { id, username, email, displayName, bio, avatar, isPrivate, isVerified } = req.body;
+      const {
+        id,
+        username,
+        email,
+        displayName,
+        bio,
+        avatar,
+        isPrivate,
+        isVerified,
+      } = UpdateUserSchema.parse(req.body);
 
-      if (!isValidObjectId(id)) {
-        return res.status(400).json({ message: 'Invalid user id' });
+      if (await UserModel.exists({ email, _id: { $ne: id } })) {
+        throw new Error(this.ERROR_MESSAGES.EMAIL_TAKEN);
+      }
+      if (await UserModel.exists({ username, _id: { $ne: id } })) {
+        throw new Error(this.ERROR_MESSAGES.USERNAME_TAKEN);
       }
 
-      const user = await User.findByIdAndUpdate(
+      const user = await UserModel.findByIdAndUpdate(
         id,
         { username, email, displayName, bio, avatar, isPrivate, isVerified },
-        { new: true, runValidators: true },
-      );
-
+        { new: true, runValidators: true }
+      ).lean();
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
       }
 
-      return res.status(200).json({ user });
-    } catch (error: any) {
-      if (error.code === 11000) {
-        return res.status(409).json({ message: 'Username or email already in use' });
-      }
-      return res.status(500).json({ message: 'Failed to update user' });
+      res.status(200).json({ user });
+    } catch (error) {
+      this.errorHandler(error as Error, req, res);
     }
   }
 }
