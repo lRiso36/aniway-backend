@@ -6,6 +6,7 @@ import path from 'path';
 import { writeFile } from 'fs/promises';
 import UserAnimeEntryModel from '../models/userAnimeEntry.model';
 import PushSubscriptionModel from '../models/pushSubscription.model';
+import { isValidObjectId } from 'mongoose';
 
 // import { AvatarFileSchema } from '../validators/users.validators';
 class UsersController extends BaseController<User> {
@@ -78,6 +79,33 @@ class UsersController extends BaseController<User> {
       res.status(200).json({ message: 'Account deleted' });
     } catch {
       res.status(500).json({ message: 'Failed to delete account' });
+    }
+  }
+
+  async updateUser(req: Request, res: Response) {
+    try {
+      const { id, username, email, displayName, bio, avatar, isPrivate, isVerified } = req.body;
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ message: 'Invalid user id' });
+      }
+
+      const user = await User.findByIdAndUpdate(
+        id,
+        { username, email, displayName, bio, avatar, isPrivate, isVerified },
+        { new: true, runValidators: true },
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      return res.status(200).json({ user });
+    } catch (error: any) {
+      if (error.code === 11000) {
+        return res.status(409).json({ message: 'Username or email already in use' });
+      }
+      return res.status(500).json({ message: 'Failed to update user' });
     }
   }
 }
