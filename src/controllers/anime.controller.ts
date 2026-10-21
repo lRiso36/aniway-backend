@@ -9,11 +9,13 @@ import VoiceActorModel from '../models/voiceActor.model';
 import StudioModel from '../models/studio.model';
 import {
   GetAnimeByIdSchema,
+  GetAnimeEpisodeSchema,
   GetRecommendedAnimeSchema,
   SearchAnimeSchema,
 } from '../validators/anime.validators';
 import { getRecommendedAnimes } from '../services/recommendation.service';
 import logger from '../logs/logger';
+import { EpisodeDataType } from '../types/episodeData.types';
 
 class AnimeController extends BaseController<Anime> {
   constructor() {
@@ -248,6 +250,29 @@ class AnimeController extends BaseController<Anime> {
         error instanceof Error ? (error.stack ?? error.message) : String(error)
       );
       console.error(error);
+      this.errorHandler(error as Error, req, res);
+    }
+  }
+
+  async getAnimeEpisodes(req: Request, res: Response) {
+    try {
+      const { anilistId } = GetAnimeEpisodeSchema.parse(req.params);
+      const anime = await AnimeModel.findOne({
+        anilistId
+      }).select('episodes').lean();
+
+      if (!anime) throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
+      
+      const episodes: EpisodeDataType[] = (anime.episodes ?? []).map((episode) => ({
+        episodeNumber: episode.episodeNumber,
+        relativeNumber: episode.relativeNumber,
+        title: episode.title,
+        titleJapanese: episode.titleJapanese,
+        airedAt: episode.airedAt,
+        filler: episode.filler,
+        recap: episode.recap,
+      }));
+    } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
   }

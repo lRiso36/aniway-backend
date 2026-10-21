@@ -92,3 +92,7 @@ export const GetRecommendedAnimeSchema = z.object({
 export const getTrendingAnimeSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional(),
 });
+
+export const GetAnimeEpisodeSchema = z.object({
+  anilistId: z.coerce.number('Anilist ID is required'),
+})
