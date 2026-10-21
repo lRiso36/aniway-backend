@@ -19,6 +19,7 @@ interface IConfig {
   clientUrl: string;
   passwordResetTtl: string;
   frontendUrl: string;
+  adminUrl: string;
   googleClientId: string;
 }
 
@@ -42,6 +43,7 @@ const config: IConfig = {
   clientUrl: 'http://localhost:5174',
   passwordResetTtl: process.env.PASSWORD_RESET_TTL || '1h',
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5174',
+  adminUrl: process.env.ADMIN_URL || 'http://localhost:5173/',
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
 };
 

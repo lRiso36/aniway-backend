@@ -12,12 +12,13 @@ import registry from './app.registry';
 import emailsController from './controllers/emails.controller';
 import usersController from './controllers/users.controller';
 import userModel from './models/user.model';
+import config from './config/config';
 
 const app = express();
 
 app.use(
   cors({
-    origin: '*',
+    origin: [config.frontendUrl, config.adminUrl],
     credentials: true,
   })
 );
