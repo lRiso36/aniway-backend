@@ -52,14 +52,15 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
   }
 
   async getUserAnimeEntry(req: Request, res: Response) {
-
     try {
       const userId = req.meta?.user?._id;
       const { anilistId } = GetAnimeByIdSchema.parse(req.params);
 
-      const anime = await AnimeModel.findOne({ anilistId }).select('_id').lean();
+      const anime = await AnimeModel.findOne({ anilistId })
+        .select('_id')
+        .lean();
       if (!anime) {
-        throw new Error(this.ERROR_MESSAGES.NOT_FOUND)
+        throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
       }
 
       const entry = await UserAnimeEntryModel.findOne({
@@ -71,7 +72,6 @@ class UserAnimeController extends BaseController<UserAnimeEntry> {
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
-
   }
   async logAnime(req: Request, res: Response) {
     try {
