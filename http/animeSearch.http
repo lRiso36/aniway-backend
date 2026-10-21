@@ -14,3 +14,6 @@ GET {{baseUrl}}/anime/1
 
 ### Get anime details - repeat call (should hit cache, detailsCached: true)
 GET {{baseUrl}}/anime/16498
+
+### get anime episodes
+GET {{baseUrl}}/anime/131681/episodes

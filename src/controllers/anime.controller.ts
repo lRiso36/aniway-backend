@@ -262,7 +262,7 @@ class AnimeController extends BaseController<Anime> {
       }).select('episodes').lean();
 
       if (!anime) throw new Error(this.ERROR_MESSAGES.NOT_FOUND);
-      
+
       const episodes: EpisodeDataType[] = (anime.episodes ?? []).map((episode) => ({
         episodeNumber: episode.episodeNumber,
         relativeNumber: episode.relativeNumber,
@@ -272,6 +272,8 @@ class AnimeController extends BaseController<Anime> {
         filler: episode.filler,
         recap: episode.recap,
       }));
+
+      return res.status(200).json(episodes);
     } catch (error) {
       this.errorHandler(error as Error, req, res);
     }
