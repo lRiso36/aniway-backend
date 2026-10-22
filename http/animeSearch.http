@@ -17,3 +17,6 @@ GET {{baseUrl}}/anime/16498
 
 ### get anime episodes
 GET {{baseUrl}}/anime/131681/episodes
+
+## test
+GET https://api.ani.zip/mappings?anilist_id=131681
