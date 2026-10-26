@@ -29,11 +29,13 @@ interface FuzzyDate {
   day?: number;
 }
 
-interface Episode {
+export interface Episode {
   episodeNumber: number;
   relativeNumber?: number;
   title?: string;
   titleJapanese?: string;
+  titleRomaji?: string;
+  runtime?: number; // minutes
   airedAt?: Date;
   filler?: boolean;
   recap?: boolean;
@@ -46,6 +48,8 @@ const episodeSchema = new Schema<Episode>(
     relativeNumber: { type: Number },
     title: { type: String },
     titleJapanese: { type: String },
+    titleRomaji: { type: String },
+    runtime: { type: Number },
     airedAt: { type: Date },
     filler: { type: Boolean },
     recap: { type: Boolean },
@@ -185,6 +189,7 @@ export interface Anime {
   endDate?: FuzzyDate; //
   episodes?: Episode[];
   episodesCached: boolean;
+  aniZipCheckedAt?: Date;
   studios: StudioLink[]; //
   characters: CharacterLink[]; //
   genres: string[]; //
@@ -202,6 +207,7 @@ export interface Anime {
   coverColor?: string; //for UX design //
   jikanFailCount: number;
   jikanFlagged: boolean;
+  isFeatured: boolean;
   embedding?: number[]; // for recommendation
 }
 
@@ -280,6 +286,7 @@ const animeSchema = new Schema<Anime>({
   coverColor: { type: String },
   jikanFailCount: { type: Number, default: 0 },
   jikanFlagged: { type: Boolean, default: false },
+  isFeatured: { type: Boolean, default: false },
   embedding: { type: [Number] },
 });
 

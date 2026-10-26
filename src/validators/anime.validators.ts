@@ -96,3 +96,37 @@ export const getTrendingAnimeSchema = z.object({
 export const GetAnimeEpisodeSchema = z.object({
   anilistId: z.coerce.number('Anilist ID is required'),
 })
+
+const toArray = <T>(val: T | T[] | undefined) =>
+  val === undefined ? undefined : Array.isArray(val) ? val : [val];
+
+const adminSortEnum = z.enum([
+  'trending',
+  'popularity',
+  'favourites',
+  'averageScore',
+  'seasonYear',
+]);
+
+export const AdminAnimeQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(10),
+  title: z.string().trim().min(1).optional(),
+  format: z
+    .union([formatEnum, z.array(formatEnum)])
+    .optional()
+    .transform(toArray),
+  status: z
+    .union([statusEnum, z.array(statusEnum)])
+    .optional()
+    .transform(toArray),
+  genres: z
+    .union([genreEnum, z.array(genreEnum)])
+    .optional()
+    .transform(toArray),
+  seasonYear: z.coerce.number().int().optional(),
+  isFeatured: z.enum(['true', 'false']).optional().transform((v) => v === undefined ? undefined : v === 'true'),
+  isAdult: z.enum(['true', 'false']).optional().transform((v) => v === undefined ? undefined : v === 'true'),
+  sortBy: adminSortEnum.optional().default('trending'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+});

@@ -99,12 +99,18 @@ class BaseController<T> {
   }
 
   async update(req: Request, res: Response) {
+    const find = await this.model.findById(req.params.id);
+
+    if(!find) throw new Error("Document not found...");
+
+    this.logger.info("req.body =", req.body)
+
     const updated = await this.model.findByIdAndUpdate(
       req.params.id,
       {
-        $set: req.body,
+        $set: req.body
       },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!updated) {

@@ -8,6 +8,7 @@ import _ from 'lodash';
 import VoiceActorModel from '../models/voiceActor.model';
 import StudioModel from '../models/studio.model';
 import {
+  AdminAnimeQuerySchema,
   GetAnimeByIdSchema,
   GetAnimeEpisodeSchema,
   GetRecommendedAnimeSchema,
