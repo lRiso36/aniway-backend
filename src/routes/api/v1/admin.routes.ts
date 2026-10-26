@@ -1,5 +1,8 @@
 import { Router } from 'express';
-import animeController from '../../../controllers/anime.controller';
-import { authMiddleware } from '../../../middlewares';
+import adminController from '../../../controllers/admin.controller';
 
 const router = Router();
+
+router.get('/anime', adminController.adminAnimeFilter);
+
+export default router;
