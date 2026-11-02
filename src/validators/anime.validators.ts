@@ -95,7 +95,7 @@ export const getTrendingAnimeSchema = z.object({
 
 export const GetAnimeEpisodeSchema = z.object({
   anilistId: z.coerce.number('Anilist ID is required'),
-})
+});
 
 const toArray = <T>(val: T | T[] | undefined) =>
   val === undefined ? undefined : Array.isArray(val) ? val : [val];
@@ -125,8 +125,18 @@ export const AdminAnimeQuerySchema = z.object({
     .optional()
     .transform(toArray),
   seasonYear: z.coerce.number().int().optional(),
-  isFeatured: z.enum(['true', 'false']).optional().transform((v) => v === undefined ? undefined : v === 'true'),
-  isAdult: z.enum(['true', 'false']).optional().transform((v) => v === undefined ? undefined : v === 'true'),
+  isFeatured: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
+  isAdult: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
   sortBy: adminSortEnum.optional().default('trending'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+});
+
+export const FeatureAnimeSchema = z.object({
+  isFeatured: z.boolean(),
 });

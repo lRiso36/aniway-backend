@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
-import { AdminAnimeQuerySchema } from '../validators/anime.validators';
+import {
+  AdminAnimeQuerySchema,
+  FeatureAnimeSchema,
+  GetAnimeByIdSchema,
+} from '../validators/anime.validators';
 import AnimeModel from '../models/anime.model';
 import errorHandler from '../utils/error-handler.util';
+import ERROR_MESSAGES from '../constants/error-messages';
 
 class AdminController {
   //   registry: typeof appRegistry;
@@ -70,7 +75,31 @@ class AdminController {
   }
 
   async featureAnime(req: Request, res: Response) {
-    
+    try {
+      const { anilistId } = GetAnimeByIdSchema.parse(req.params);
+      const { isFeatured } = FeatureAnimeSchema.parse(req.body);
+
+      const newAnime = await AnimeModel.findOneAndUpdate(
+        { anilistId },
+        {
+          $set: {
+            isFeatured,
+          },
+        },
+        { new: true }
+      );
+
+      if (!newAnime) {
+        throw new Error(ERROR_MESSAGES.NOT_FOUND);
+      }
+
+      return res
+        .status(200)
+        .json({ anilistId, isFeatured: newAnime.isFeatured });
+    } catch (error) {
+      console.error(error);
+      errorHandler(error as Error, req, res);
+    }
   }
 }
 

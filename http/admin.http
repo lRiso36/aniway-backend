@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:5000/api/v1/admin/anime
+### Feature an anime
+PATCH {{baseUrl}}/1/feature
+Content-Type: application/json
+
+{
+  "isFeatured": true
+}
+
+### Unfeature it
+PATCH {{baseUrl}}/1/feature
+Content-Type: application/json
+
+{
+  "isFeatured": false
+}
+
+### Not found (expect 404)
+PATCH http://localhost:3000/api/v1/anime/99999999/feature
+Content-Type: application/json
+
+{
+  "isFeatured": true
+}
+
+### Bad body (expect 400)
+PATCH http://localhost:3000/api/v1/anime/1/feature
+Content-Type: application/json
+
+{
+  "isFeatured": "yes"
+}
