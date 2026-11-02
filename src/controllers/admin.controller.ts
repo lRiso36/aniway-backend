@@ -68,6 +68,10 @@ class AdminController {
       errorHandler(error as Error, req, res);
     }
   }
+
+  async featureAnime(req: Request, res: Response) {
+    
+  }
 }
 
 const adminController = new AdminController();
